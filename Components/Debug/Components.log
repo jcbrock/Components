@@ -1,0 +1,16 @@
+﻿Build started 4/11/2015 10:21:26 AM.
+     1>Project "C:\Users\jbrock\Documents\Visual Studio 2013\Projects\Components\Components\Components.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glew-1.9.0\include" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glm-0.9.4.0" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glfw-3.0.3\include\GLFW" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D TW_STATIC /D TW_NO_LIB_PRAGMA /D TW_NO_DIRECT3D /D GLEW_STATIC /D _CRT_SECURE_NO_WARNINGS /D "CMAKE_INTDIR=\"Debug\"" /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ObjectModel\RigidBody.cpp OpenGL\OpenGL.cpp TestOpenGL.cpp
+         TestOpenGL.cpp
+     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\wchar.h(1274): error C3861: 'memcpy': identifier not found
+         OpenGL.cpp
+     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\wchar.h(1274): error C3861: 'memcpy': identifier not found
+         RigidBody.cpp
+     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\wchar.h(1274): error C3861: 'memcpy': identifier not found
+         Generating Code...
+     1>Done Building Project "C:\Users\jbrock\Documents\Visual Studio 2013\Projects\Components\Components\Components.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:02.02
