@@ -1,0 +1,16 @@
+﻿Build started 3/8/2015 10:17:20 PM.
+     1>Project "C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\GLEW_190.vcxproj" on node 2 (Build target(s)).
+     1>CustomBuild:
+         Building Custom Rule C:/Users/jbrock/Documents/Github/OpenGLTutorials2-1/external/CMakeLists.txt
+         CMake does not need to re-run because C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\CMakeFiles\generate.stamp is up-to-date.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glfw-3.0.3\include\GLFW" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glew-1.9.0\include" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\AntTweakBar-1.16\include" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\assimp-3.0.1270\code\BoostWorkaround" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\bullet-2.81-rev2613\src" /Zi /nologo /W3 /WX- /MP /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D TW_STATIC /D TW_NO_LIB_PRAGMA /D TW_NO_DIRECT3D /D GLEW_STATIC /D _CRT_SECURE_NO_WARNINGS /D _WINDOWS /D ASSIMP_BUILD_BOOST_WORKAROUND /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"GLEW_190.dir\Debug\\" /Fd"GLEW_190.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt "..\..\external\glew-1.9.0\src\glew.c"
+         glew.c
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\Debug\GLEW_190.lib" /NOLOGO GLEW_190.dir\Debug\glew.obj
+         GLEW_190.vcxproj -> C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\Debug\GLEW_190.lib
+     1>Done Building Project "C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\GLEW_190.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.65

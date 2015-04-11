@@ -1,0 +1,48 @@
+﻿Build started 3/8/2015 10:17:20 PM.
+     1>Project "C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src\GLFW_303.vcxproj" on node 3 (Build target(s)).
+     1>CustomBuild:
+         Building Custom Rule C:/Users/jbrock/Documents/Github/OpenGLTutorials2-1/external/glfw-3.0.3/src/CMakeLists.txt
+         CMake does not need to re-run because C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src\CMakeFiles\generate.stamp is up-to-date.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\external\glfw-3.0.3\src" /I"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src" /Zi /nologo /W3 /WX- /MP /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D TW_STATIC /D TW_NO_LIB_PRAGMA /D TW_NO_DIRECT3D /D GLEW_STATIC /D _CRT_SECURE_NO_WARNINGS /D UNICODE /D WINVER=0x0501 /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"GLFW_303.dir\Debug\\" /Fd"GLFW_303.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt "..\..\..\..\external\glfw-3.0.3\src\clipboard.c" "..\..\..\..\external\glfw-3.0.3\src\context.c" "..\..\..\..\external\glfw-3.0.3\src\gamma.c" "..\..\..\..\external\glfw-3.0.3\src\init.c" "..\..\..\..\external\glfw-3.0.3\src\input.c" "..\..\..\..\external\glfw-3.0.3\src\joystick.c" "..\..\..\..\external\glfw-3.0.3\src\monitor.c" "..\..\..\..\external\glfw-3.0.3\src\time.c" "..\..\..\..\external\glfw-3.0.3\src\window.c" "..\..\..\..\external\glfw-3.0.3\src\win32_clipboard.c" "..\..\..\..\external\glfw-3.0.3\src\win32_gamma.c" "..\..\..\..\external\glfw-3.0.3\src\win32_init.c" "..\..\..\..\external\glfw-3.0.3\src\win32_joystick.c" "..\..\..\..\external\glfw-3.0.3\src\win32_monitor.c" "..\..\..\..\external\glfw-3.0.3\src\win32_time.c" "..\..\..\..\external\glfw-3.0.3\src\win32_window.c" "..\..\..\..\external\glfw-3.0.3\src\wgl_context.c"
+         clipboard.c
+         context.c
+         gamma.c
+         init.c
+         input.c
+         joystick.c
+         monitor.c
+         time.c
+         window.c
+         win32_clipboard.c
+         win32_gamma.c
+         win32_init.c
+         win32_joystick.c
+         win32_monitor.c
+         win32_time.c
+         win32_window.c
+         wgl_context.c
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src\Debug\glfw3.lib" /NOLOGO GLFW_303.dir\Debug\clipboard.obj
+         GLFW_303.dir\Debug\context.obj
+         GLFW_303.dir\Debug\gamma.obj
+         GLFW_303.dir\Debug\init.obj
+         GLFW_303.dir\Debug\input.obj
+         GLFW_303.dir\Debug\joystick.obj
+         GLFW_303.dir\Debug\monitor.obj
+         GLFW_303.dir\Debug\time.obj
+         GLFW_303.dir\Debug\window.obj
+         GLFW_303.dir\Debug\win32_clipboard.obj
+         GLFW_303.dir\Debug\win32_gamma.obj
+         GLFW_303.dir\Debug\win32_init.obj
+         GLFW_303.dir\Debug\win32_joystick.obj
+         GLFW_303.dir\Debug\win32_monitor.obj
+         GLFW_303.dir\Debug\win32_time.obj
+         GLFW_303.dir\Debug\win32_window.obj
+         GLFW_303.dir\Debug\wgl_context.obj
+         GLFW_303.vcxproj -> C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src\Debug\glfw3.lib
+     1>Done Building Project "C:\Users\jbrock\Documents\Github\OpenGLTutorials2-1\ProjectFiles\external\glfw-3.0.3\src\GLFW_303.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.73
