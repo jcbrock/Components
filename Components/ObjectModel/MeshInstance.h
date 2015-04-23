@@ -5,14 +5,14 @@
 #include "glm\glm.hpp"
 
 #include "../misc.h"
-// Include GLEW
-//#include <GL/glew.h>
 
 #include <memory>
+#include <string>
 
 
 class Buffer;
 
+// I'd say this class is responsible for handling the OpenGL representation of obj
 class MeshInstance
 {
 public:
@@ -25,22 +25,24 @@ public:
     MeshInstance& operator=(const MeshInstance&); //this right?
 
 //private:
-    //why the fuck does this even need to be a pointer?
-    //post construction init I guess
-    //easy class size - BUT, memory of class is spread out
-    //so might not have good locality. Lets check that
-    //Oh dear god, that is correct
+    void Initialize();
+    void DebugPrint();
+    
+    std::string mName; //TODO - can only be a certain size, don't want a pointer to somewhere else
+	
+	bool mMarkedForDeletion = false;
+	Handle mTextureHandle;
 
-    //CAN PROPERTIES BE SHARED ACROSS MESHINSTANCES?
-    //CAN THESE BE CHANGED THROUGHOUT THE GAME?
-    //keep this shit simple for now, making a fuckin PONG game
-    std::unique_ptr<Buffer> mVertices;
-    std::unique_ptr<Buffer> mUVBuffer;
-    Handle mTextureHandle;
+	//this does change throughout the game, not positive
+	//this is the right place for it
+	glm::mat4 mMVPForScene;
 
-    //this does change throughout the game, not positive
-    //this is the right place for it
-    glm::mat4 mMVPForScene;
+	Buffer2 mVertices2;
+    Buffer2 mUVBuffer2;
+    
+	// Temp - just keeping around for TestOpenGL.cpp
+	std::unique_ptr<Buffer> mVertices;
+    std::unique_ptr<Buffer> mUVBuffer; 
 };
 
 

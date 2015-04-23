@@ -9,6 +9,18 @@ GameObject::GameObject()
    // mName = new char[12];
 }
 
+GameObject::GameObject(const std::string& name)
+{
+    if (name.size() > 11) //(remember null char)
+    {
+        //print error
+        return;
+    }
+
+    //strcpy(mName, name.c_str());
+    strcpy(mName, name.c_str());
+}
+
 GameObject::~GameObject()
 {
    // delete[] mName;
@@ -23,7 +35,7 @@ GameObject::GameObject(const GameObject& copy)
     strcpy(mName, copy.mName);
 }
 
-void GameObject::SetName(std::string name)
+void GameObject::SetName(const std::string& name)
 {
     if (name.size() > 11) //(remember null char)
     {
@@ -70,7 +82,7 @@ void GameObject::SetRigidBodyComponent(void* ptr)
     SetComponent(ptr, 0);
 }
 
-void GameObject::SetBComponent(void* ptr)
+void GameObject::SetMeshInstanceComponent(void* ptr)
 {
     SetComponent(ptr, 1);
 }
@@ -80,6 +92,15 @@ void GameObject::SetCComponent(void* ptr)
     SetComponent(ptr, 2);
 }
 
+void* GameObject::GetRigidBodyComponent()
+{
+    return mComponents[0];
+}
+
+void* GameObject::GetMeshInstanceComponent()
+{
+    return mComponents[1];
+}
 //NO - this is updating on a per object basis, not ideal
 //void GameObject::UpdateASubsystem()
 //{

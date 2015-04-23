@@ -4,110 +4,170 @@
 //#include <stdlib.h>
 //#include <cstring>
 //#include <cstdlib>
+//#include "ObjectModel\RigidBody.h"
 
-
-void RigidBodyManager::Initialize()
+void RigidBodyManager::DebugPrint()
 {
-   /* maxSize = 10; //w/e for now
-    mRigidBodyArray = new int[1024]; //4192 bytes
-    mUsedArray = new int[128]; //512 possible elements
+    // pretty dirty with all these casts
+    RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
-    std::memset(mUsedArray, 0, 128 * sizeof(int));
-
-    freeHeadPtr = mRigidBodyArray;
-
-    
-    RigidBody* ptr = reinterpret_cast <RigidBody*>(mRigidBodyArray);
-    //void* nextPtr;
-    for (unsigned int i = 0; i < maxSize; ++i)
+    for (int i = 0; i < mMaxSize; ++i)
     {
-        void* foo = (void*)ptr;
-        std::memset(ptr, 0, sizeof(void*));//set ptr to next free element (next in line)        
-        //std::memcpy(ptr, ptr, sizeof(void*));//set ptr to next free element (next in line)        
-        std::memcpy(foo, foo, 4);//set ptr to next free element (next in line)        
-        ++ptr;
+        int set = 0;
+        char* p = reinterpret_cast<char*>(data)+4;
+        
+        std::memcpy(&set, p, 4);
+        if (set != 0)
+        {
+            (*data).DebugPrint();
+        }
+
+        ++data;
+    }
+}
+
+void RigidBodyManager::Initialize(unsigned int maxSize)
+{
+    mNumberOfAllocatedBlocks = 0;
+    mMaxSize = maxSize;
+    mRigidBodyArray = new RigidBody[maxSize];
+    freeHeadPtr = mRigidBodyArray;
+   
+    // Not really needed, but nice for debugging
+
+    std::memset(mRigidBodyArray, 0, maxSize * sizeof(RigidBody));
+    
+    RigidBody* nextBlock = reinterpret_cast <RigidBody*>(mRigidBodyArray);
+
+    // Set ptr to next free block
+    
+    for (unsigned int i = 0; i < mMaxSize - 1; ++i)
+    {
+        // Copy the actual address of the next address into the block
+
+        RigidBody* currentBlock = nextBlock;
+        ++nextBlock; 		
+        std::memcpy(currentBlock, &nextBlock, sizeof(void*)); // Assuming 4 byte pointer
     }
 
-    */
-    //how do I construct it? on stack, then memcopy?
+    std::memset(nextBlock, 0, sizeof(void*));
 
-    /*  {
-          RigidBody rb;
-          rb.Initialize();
-          int debug = sizeof(rb);
-          RigidBody* ptr = reinterpret_cast < RigidBody*>(mRigidBodyArray);
-          std::memcpy(ptr, &rb, sizeof(rb));
-          }
-
-          std::cout << "";
-          */
 }
 
-void* RigidBodyManager::CreateRigidBody()
+
+RigidBody* RigidBodyManager::CreateRigidBody()
 {
-    //static int index = 0;
-    //if (index > maxSize)
-    //{
+    // If there is no room, freeHeadPtr will be null
+
+    if (!freeHeadPtr)
+    {
         //assert - TODO
-    //    return nullptr;
-    //}
-
-    //ugh, do bit math.
-    //void* bPtr = mUsedArray;
-    /*
-    mUsedArray2[0] = true; //TODO BIT ARRAY
+        return nullptr;
+    }
 
 
-    //TODO - right now i'm not freeing, just adding on, there this is highest
-   // highestAllocatedIndex = index; //TOOD?
-
-
+    // Save pointer to current block and jump head to next free block
+    // Note: Make sure to update freeHeadPtr itself, not what it points to
+    //		If this is the last block, it will be nullptr
+    void* aboutToBeAllocated = freeHeadPtr;
+    std::memcpy(&freeHeadPtr, freeHeadPtr, 4);
+    
+    // Create new rigidbody in this block
+    // Fuck, this is the part about how I don't know if this is possible without custom allocator
+    RigidBody* ptr = reinterpret_cast <RigidBody*>(aboutToBeAllocated);
+    
+    // This...heopfully...blows away w/e was in this ptr
+    // again, probably wasteful. Ideally I create the object in the block,
+    // not on the stack then copy it...
     RigidBody rb;
     rb.Initialize();
-    //int debug = sizeof(rb);
-    RigidBody* ptr = reinterpret_cast <RigidBody*>(freeHeadPtr);
-
-    std::memcpy(freeHeadPtr, freeHeadPtr, 4); //first 4 bytes of a block should be a pointer to next free block. TOOD - size check?
-   
     std::memcpy(ptr, &rb, sizeof(rb));
 
-    return ptr; //rather than passing around stuff as void ptrs - i should probably use poly morph (i.e. rigidbody, meshinstance, would inherit from Component class)
-    */
-    return nullptr;
+    ++mNumberOfAllocatedBlocks;
+
+    return ptr;
 }
 
+
+
+//TODO - left off here
+// add .gitigore for the files I Don't want tracked... duh, lol
+ 
+//TODO - how do I know the index?
 void RigidBodyManager::DestroyRigidBody(unsigned int index)
 {
-    /*
-    if (index > maxSize)
+    if (mNumberOfAllocatedBlocks == 0)
     {
         //assert - TODO
         return;
     }
 
-    mUsedArray2[index] = false;
 
-    //actually, I just mark the block free?
-    //no, I gotta add it back to the pool...
+    // Get pointer to block, free it (i.e. just memset it to 0? That is...a bad idea? Cuz I don't
+    // call destructor? Then again, do I... need to?)
+
+    // Clear the block
+
     RigidBody* ptr = reinterpret_cast <RigidBody*>(mRigidBodyArray);
-    std::memcpy(&ptr[index], 0, sizeof(RigidBody));
-    std::memcpy(&ptr[index], freeHeadPtr, sizeof(void*));
-    freeHeadPtr = (void*)ptr;
+    std::memset(&ptr[index], 0, sizeof(RigidBody));
 
-    //How do I add it back to the LL? oh, make head pt to it, the ptr
-    //in this block is the former head
-    */
+    // Update pointer to the next free block (which is currently the head)
+
+    std::memcpy(&ptr[index], &freeHeadPtr, sizeof(void*));
+
+    // Update head pointer to newly freed block. This means that the most reecently
+    // freed block will be the next block to be filled
+
+    freeHeadPtr = &ptr[index];
+
+    --mNumberOfAllocatedBlocks;
 }
 
-// I guess I'm going to have to do a "if nullptr" check
-// each time while iterating, since my block is going to be
-// fragmented over time
 
-// Oh wait, I'm having the seperate bit array
+//OR CALL DestroyRigidBody during the update loop thru each one
+void RigidBodyManager::CleanupDeletions()
+{
+    for (int i = 0; i < mMaxSize; ++i)
+    {
+        RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
+        
+        int set = 0;
+        char* p = reinterpret_cast<char*>(data)+4;
 
-// Well, I'm not really doing the free block LL approach, I just check the bit array?
-// GetFirstOpenBit - how expensive is that op?
-// Well, the downside to the LL apporach is the extra storage of hte ptrs,
-// but those are theoretically hidden within the free blocks...
+        std::memcpy(&set, p, 4);
+        if (set != 0 && data->mMarkedForDeletion)
+        {
+            DestroyRigidBody(i);
+        }
 
-// Ok, I'll try to do the LL apporach too, at least acidemically
+        ++data;
+    }
+}
+
+void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
+{
+    RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
+
+    for (int i = 0; i < mMaxSize; ++i)
+    {
+        int set = 0;
+        char* p = reinterpret_cast<char*>(data)+4;
+
+        std::memcpy(&set, p, 4);
+        if (set != 0)
+        {
+            if (data->mMarkedForDeletion) //maybe this is set by an event
+            {
+                DestroyRigidBody(i);
+            }
+            else
+            {
+                data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
+                data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
+            }
+        }
+
+        ++data;
+    }
+
+}

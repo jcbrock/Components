@@ -4,23 +4,16 @@
 #include <string>
 #include <array>
 
-// Name (for ease of use)
-// Components
-// Make virtual?
-// GO
-//  Item
-//  Character
-//  
-
 class GameObject
 {
 public:
     GameObject();
+    GameObject(const std::string& name);
     virtual ~GameObject();
 
     GameObject(const GameObject&);
 
-    void SetName(std::string name);
+    void SetName(const std::string& name);
     std::string GetName();
 
 
@@ -28,15 +21,17 @@ public:
     
     void SetComponent(void* ptr, int slot);
     void SetRigidBodyComponent(void* ptr);
-    void SetBComponent(void* ptr);
+    void SetMeshInstanceComponent(void* ptr);
     void SetCComponent(void* ptr);
+
+    void* GetRigidBodyComponent();
+    void* GetMeshInstanceComponent();
 
 private:
 
 public:
 
 private:
-    //std::string mName;
     //char* mName; //heap
     char mName[12]; //stack 12 bytes
 
@@ -58,8 +53,6 @@ private:
     //Do I queue up events/tasks that then get processed each time through the loop?
 
     //Each game object has a queue of events to handle? Subsystem holds onto the <object, event> pair? Read up on this :/
-
-
 };
 
 

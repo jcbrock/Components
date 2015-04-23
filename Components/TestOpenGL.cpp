@@ -245,10 +245,10 @@ void Draw(
 
 int foo2()
 {
-    if (!OpenGLInit())
+    /*if (!OpenGLInit())
     {
         return -1;
-    }
+    }*/
     
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader");
