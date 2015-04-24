@@ -88,11 +88,6 @@ RigidBody* RigidBodyManager::CreateRigidBody()
     return ptr;
 }
 
-
-
-//TODO - left off here
-// add .gitigore for the files I Don't want tracked... duh, lol
- 
 //TODO - how do I know the index?
 void RigidBodyManager::DestroyRigidBody(unsigned int index)
 {

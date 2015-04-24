@@ -84,11 +84,6 @@ MeshInstance* MeshInstanceManager::CreateMeshInstance()
     return ptr;
 }
 
-
-
-//TODO - left off here
-// add .gitigore for the files I Don't want tracked... duh, lol
-
 //TODO - how do I know the index?
 void MeshInstanceManager::DestroyMeshInstance(unsigned int index)
 {
@@ -158,10 +153,12 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
             }
             else
             {
+                //shit, how do I get the new position for this GO?
+                
+                glm::vec3 v3(data->mPositionWorldCoord);
+               
                 glm::mat4 leftPaddleTranslationMatrix = glm::mat4(1.0f);
-                leftPaddleTranslationMatrix = glm::translate(
-                    leftPaddleTranslationMatrix,
-                    glm::vec3(glm::vec3(1, 0, 0) *  timeDelta));
+                leftPaddleTranslationMatrix = glm::translate(leftPaddleTranslationMatrix, v3);
                 
                 data->mMVPForScene = mProjection * mView * leftPaddleTranslationMatrix;
 
@@ -171,6 +168,9 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
 
                 //data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
                 // data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
+
+                data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
+                data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
             }
         }
 

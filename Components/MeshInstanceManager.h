@@ -1,8 +1,6 @@
 #ifndef MESH_INSTANCE_MANAGER_H
 #define MESH_INSTANCE_MANAGER_H
 
-//#include <list>
-//#include <array>
 #include "ObjectModel\MeshInstance.h"
 
 //for glm  /transofrm stuff
@@ -22,13 +20,11 @@ public:
     void MarkMeshInstanceForDelete(int index);
     void DestroyMeshInstance(unsigned int index);
     
-	//void DestroyMeshInstance(); //mark expired, next time through loop, we remove that item from linked list (so we don't have to iterate tho at this exact moment and destroy)
 	void DebugPrint();
 private:
 
     void* mMeshInstanceArray; //space for 8 RBs for now.
     void* freeHeadPtr;
-    //unsigned int highestAllocatedIndex;
 	unsigned int mNumberOfAllocatedBlocks;
     unsigned int mMaxSize;
 
