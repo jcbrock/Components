@@ -1,4 +1,5 @@
 #include "MeshInstanceManager.h"
+#include <math.h>
 
 void MeshInstanceManager::DebugPrint()
 {
@@ -20,10 +21,12 @@ void MeshInstanceManager::DebugPrint()
     }
 }
 
-void MeshInstanceManager::Initialize(unsigned int maxSize)
+void MeshInstanceManager::Initialize(unsigned long maxSize)
 {
+    mMaxSize = floor(maxSize / sizeof(MeshInstance));
+   
     mNumberOfAllocatedBlocks = 0;
-    mMaxSize = maxSize;
+  //  mMaxSize = maxSize;
 
     //don't want to actually create the mesh instances yet, so just setting space
     mMeshInstanceArray = new char[maxSize * sizeof(MeshInstance)];
@@ -150,27 +153,6 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
             if (data->mMarkedForDeletion) //maybe this is set by an event
             {
                 DestroyMeshInstance(i);
-            }
-            else
-            {
-                //shit, how do I get the new position for this GO?
-                
-                glm::vec3 v3(data->mPositionWorldCoord);
-               
-                glm::mat4 leftPaddleTranslationMatrix = glm::mat4(1.0f);
-                leftPaddleTranslationMatrix = glm::translate(leftPaddleTranslationMatrix, v3);
-                
-                data->mMVPForScene = mProjection * mView * leftPaddleTranslationMatrix;
-
-                //leftPaddleGO.GetMeshInstance()->mMVPForScene = Projection * View * leftPaddleTranslationMatrix;
-                //eftPaddleGO.GetRigidBody()->mPositionWorldCoord += leftPaddleGO.GetRigidBody()->mDirection * leftPaddleGO.GetRigidBody()->mSpeed;
-
-
-                //data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
-                // data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
-
-                data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
-                data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
             }
         }
 

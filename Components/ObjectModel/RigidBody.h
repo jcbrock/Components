@@ -27,6 +27,10 @@ public:
     glm::vec4 mDirection;
     bool mIsCollidable;
     bool mMarkedForDeletion = false;
+
+    //this does change throughout the game, not positive
+    //this is the right place for it
+    glm::mat4 mMVPForScene;
 };
 
 

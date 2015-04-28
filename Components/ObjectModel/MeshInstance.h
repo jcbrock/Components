@@ -27,15 +27,13 @@ public:
 //private:
     void Initialize();
     void DebugPrint();
-    
-    std::string mName; //TODO - can only be a certain size, don't want a pointer to somewhere else
-	
+
+    // Getters / Setters
+    void SetName(const std::string& name);
+    //std::string GetName();
+
 	bool mMarkedForDeletion = false;
 	Handle mTextureHandle;
-
-	//this does change throughout the game, not positive
-	//this is the right place for it
-	glm::mat4 mMVPForScene;
 
 	Buffer2 mVertices2;
     Buffer2 mUVBuffer2;
@@ -43,6 +41,9 @@ public:
 	// Temp - just keeping around for TestOpenGL.cpp
 	std::unique_ptr<Buffer> mVertices;
     std::unique_ptr<Buffer> mUVBuffer; 
+
+private:
+    char mName[14]; //stack 14 bytes
 };
 
 

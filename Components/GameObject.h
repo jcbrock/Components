@@ -32,13 +32,12 @@ private:
 public:
 
 private:
-    //char* mName; //heap
     char mName[12]; //stack 12 bytes
 
     std::array<void*, 5> mComponents; //20 bytes
     //make these constants
     //slot 0 - RigidBody
-    //slot 1 - 
+    //slot 1 - MeshInstance
     //slot 2 - 
     //slot 3 - 
     //slot 4 - 

@@ -1,4 +1,5 @@
 #include "RigidBodyManager.h"
+#include <math.h>
 //#include <iostream>
 //#include <wchar.h>
 //#include <stdlib.h>
@@ -26,10 +27,10 @@ void RigidBodyManager::DebugPrint()
     }
 }
 
-void RigidBodyManager::Initialize(unsigned int maxSize)
+void RigidBodyManager::Initialize(unsigned long maxSize)
 {
     mNumberOfAllocatedBlocks = 0;
-    mMaxSize = maxSize;
+    mMaxSize = floor(maxSize / sizeof(RigidBody));
     mRigidBodyArray = new RigidBody[maxSize];
     freeHeadPtr = mRigidBodyArray;
    
@@ -161,6 +162,11 @@ void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
                 data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
             }
         }
+
+        glm::mat4 leftPaddleTranslationMatrix = glm::mat4(1.0f);
+        leftPaddleTranslationMatrix = glm::translate(leftPaddleTranslationMatrix, glm::vec3(data->mPositionWorldCoord));
+
+        data->mMVPForScene = mProjection * mView * leftPaddleTranslationMatrix;
 
         ++data;
     }

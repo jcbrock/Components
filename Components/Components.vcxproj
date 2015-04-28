@@ -70,6 +70,7 @@
     <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="common\texture.cpp" />
+    <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObject2.cpp" />
     <ClCompile Include="Item.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\texture.hpp" />
+    <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObject2.h" />
     <ClInclude Include="Item.h" />

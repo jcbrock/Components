@@ -515,28 +515,28 @@ int foo2()
             leftPaddleTranslationMatrix,
             glm::vec3(leftPaddleGO.GetRigidBody()->mDirection * leftPaddleGO.GetRigidBody()->mSpeed));
 
-        leftPaddleGO.GetMeshInstance()->mMVPForScene = Projection * View * leftPaddleTranslationMatrix;
+        leftPaddleGO.GetRigidBody()->mMVPForScene = Projection * View * leftPaddleTranslationMatrix;
         leftPaddleGO.GetRigidBody()->mPositionWorldCoord += leftPaddleGO.GetRigidBody()->mDirection * leftPaddleGO.GetRigidBody()->mSpeed;
 
         rightPaddleTranslationMatrix = glm::translate(
             rightPaddleTranslationMatrix,
             glm::vec3(rightPaddleGO.GetRigidBody()->mDirection * rightPaddleGO.GetRigidBody()->mSpeed));
 
-        rightPaddleGO.GetMeshInstance()->mMVPForScene = Projection * View * rightPaddleTranslationMatrix;
+        rightPaddleGO.GetRigidBody()->mMVPForScene = Projection * View * rightPaddleTranslationMatrix;
         rightPaddleGO.GetRigidBody()->mPositionWorldCoord += rightPaddleGO.GetRigidBody()->mDirection * rightPaddleGO.GetRigidBody()->mSpeed;
 
         ballTranslationMatrix = glm::translate(
             ballTranslationMatrix,
             glm::vec3(ballGO.GetRigidBody()->mDirection * ballGO.GetRigidBody()->mSpeed));
 
-        ballGO.GetMeshInstance()->mMVPForScene = Projection * View * ballTranslationMatrix;
+        ballGO.GetRigidBody()->mMVPForScene = Projection * View * ballTranslationMatrix;
         ballGO.GetRigidBody()->mPositionWorldCoord += ballGO.GetRigidBody()->mDirection * ballGO.GetRigidBody()->mSpeed;
 
       
 
-        Draw(ballGO.GetMeshInstance()->mMVPForScene, ballGO.GetMeshInstance()->mVertices, ballGO.GetMeshInstance()->mUVBuffer, ballGO.GetMeshInstance()->mTextureHandle);
-        Draw(leftPaddleGO.GetMeshInstance()->mMVPForScene, leftPaddleGO.GetMeshInstance()->mVertices, leftPaddleGO.GetMeshInstance()->mUVBuffer, leftPaddleGO.GetMeshInstance()->mTextureHandle);
-        Draw(rightPaddleGO.GetMeshInstance()->mMVPForScene, rightPaddleGO.GetMeshInstance()->mVertices, rightPaddleGO.GetMeshInstance()->mUVBuffer, rightPaddleGO.GetMeshInstance()->mTextureHandle);
+        Draw(ballGO.GetRigidBody()->mMVPForScene, ballGO.GetMeshInstance()->mVertices, ballGO.GetMeshInstance()->mUVBuffer, ballGO.GetMeshInstance()->mTextureHandle);
+        Draw(leftPaddleGO.GetRigidBody()->mMVPForScene, leftPaddleGO.GetMeshInstance()->mVertices, leftPaddleGO.GetMeshInstance()->mUVBuffer, leftPaddleGO.GetMeshInstance()->mTextureHandle);
+        Draw(rightPaddleGO.GetRigidBody()->mMVPForScene, rightPaddleGO.GetMeshInstance()->mVertices, rightPaddleGO.GetMeshInstance()->mUVBuffer, rightPaddleGO.GetMeshInstance()->mTextureHandle);
 
 
         //if (CollisionEngine::Instance().DetectAndResolveCollisions(ballGO, worldGameObjects))

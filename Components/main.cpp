@@ -10,7 +10,13 @@
 #include <thread>
 #include <chrono>
 
+// for page size
+//#include <stdio.h>
+#include <windows.h>
+
+
 //TODO - look at includes, think about dependencies
+extern GLFWwindow* window;
 RigidBodyManager rbm;
 MeshInstanceManager mim;
 OpenGLManager openGLm;
@@ -21,15 +27,15 @@ void UpdateSubsystems(float timeDelta)
     mim.UpdateSubsystem(timeDelta);
 }
 
-extern GLFWwindow* window;
-
-bool InitializeSubsystems()
+bool InitializeSubsystems(DWORD memoryPageSize)
 {
+    std::cout << "Memory page size on this system: " << memoryPageSize << std::endl;
+
     bool ok = true;
 
     ok = ok && openGLm.OpenGLInit();
-    rbm.Initialize(10);
-    mim.Initialize(10);
+    rbm.Initialize(memoryPageSize);
+    mim.Initialize(memoryPageSize);
 
     return ok;
 }
@@ -256,12 +262,11 @@ void Draw(
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
 
     glDisableVertexAttribArray(openGLm.mVertexInputHandle);
-    //glDisableVertexAttribArray(vertShaderAttributeHandles.mUVCoordinate);
 }
 
-void Draw(MeshInstance* meshInstance)
+void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
 {
-    Draw(meshInstance->mMVPForScene, meshInstance->mVertices2, meshInstance->mUVBuffer2, meshInstance->mTextureHandle);
+    Draw(rigidBody->mMVPForScene, meshInstance->mVertices2, meshInstance->mUVBuffer2, meshInstance->mTextureHandle);
 }
 
 void SetupGameObject(GameObject& obj,
@@ -280,7 +285,7 @@ void SetupGameObject(GameObject& obj,
     // MESH INSTANCE
 
     MeshInstance* objMI = mim.CreateMeshInstance();
-    objMI->mName = obj.GetName() + "MI"; //TODO - don't do plus
+    objMI->SetName(obj.GetName() + "MI"); //TODO - don't do plus
     objMI->mVertices2.Initialize(vertDataSize, vertData);
     objMI->mUVBuffer2.Initialize(uvDataSize, uvData);
     objMI->mTextureHandle = textureHandle;
@@ -291,7 +296,10 @@ int main()
 {
     // INIT SUBSYSTEMS - OpenGL, RigidyBodyManager, MeshInstanceManager
 
-    InitializeSubsystems();
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+
+    InitializeSubsystems(si.dwPageSize);
 
     // SETUP GAME OBJECTS
 
@@ -315,11 +323,13 @@ int main()
 
     bool endGameLoop = false;
     float timeDelta = 1;
+    reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
     while (!endGameLoop)
     {
+        
         timeDelta += .1;
         std::cout << "Timedelta: " << timeDelta << std::endl;
-        mim.DebugPrint();
+        rbm.DebugPrint();
 
 
         // Clear the screen
@@ -329,9 +339,9 @@ int main()
         UpdateSubsystems(timeDelta);
 
         // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?
-        Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()));
-        Draw(reinterpret_cast<MeshInstance*>(leftPaddle.GetMeshInstanceComponent()));
-        Draw(reinterpret_cast<MeshInstance*>(rightPaddle.GetMeshInstanceComponent()));
+        Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent()));
+        Draw(reinterpret_cast<MeshInstance*>(leftPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(leftPaddle.GetRigidBodyComponent()));
+        Draw(reinterpret_cast<MeshInstance*>(rightPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(rightPaddle.GetRigidBodyComponent()));
 
         // Swap buffers
         glfwSwapBuffers(window);

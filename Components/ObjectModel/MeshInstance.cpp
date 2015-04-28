@@ -24,15 +24,24 @@ MeshInstance& MeshInstance::operator=(const MeshInstance& obj)
 
 void MeshInstance::Initialize()
 {
-	mName = "Unknown";
+    strcpy(mName, "Unknown");
+}
+
+void MeshInstance::SetName(const std::string& name)
+{
+    if (name.length() > 13)
+    {
+        //todo - print error
+        return;
+    }
+
+    strcpy(mName, name.c_str());
 }
 
 void MeshInstance::DebugPrint()
 {
-	std::cout << mName << std::endl <<
-		"	mVerticesHandle: " << mVertices2.mBufferHandle << std::endl <<
-		"	mUVBufferHandle: " << mUVBuffer2.mBufferHandle << std::endl <<
-		"	mTextureHandle: " << mTextureHandle << std::endl <<
-		"	mMVPForScene: " << mMVPForScene[0].x << "," << mMVPForScene[0].y << "," <<
-		mMVPForScene[0].z << "," << mMVPForScene[0].w << std::endl << std::endl;
+    std::cout << mName << std::endl <<
+        "	mVerticesHandle: " << mVertices2.mBufferHandle << std::endl <<
+        "	mUVBufferHandle: " << mUVBuffer2.mBufferHandle << std::endl <<
+        "	mTextureHandle: " << mTextureHandle << std::endl << std::endl;
 }
