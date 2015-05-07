@@ -1,4 +1,6 @@
 #include "MeshInstanceManager.h"
+#include "ObjectModel\MeshInstance.h"
+
 #include <math.h>
 
 void MeshInstanceManager::DebugPrint()
@@ -21,6 +23,8 @@ void MeshInstanceManager::DebugPrint()
     }
 }
 
+//TODO - issue -> MeshInstance is like 4k bytes cuz it holds bufferData
+// so it is like...a page per instance, how do I make that more memory friendly?
 void MeshInstanceManager::Initialize(unsigned long maxSize)
 {
     mMaxSize = floor(maxSize / sizeof(MeshInstance));
@@ -29,12 +33,12 @@ void MeshInstanceManager::Initialize(unsigned long maxSize)
   //  mMaxSize = maxSize;
 
     //don't want to actually create the mesh instances yet, so just setting space
-    mMeshInstanceArray = new char[maxSize * sizeof(MeshInstance)];
+    mMeshInstanceArray = new char[mMaxSize * sizeof(MeshInstance)];
     freeHeadPtr = mMeshInstanceArray;
 
     // Not really needed, but nice for debugging
 
-    std::memset(mMeshInstanceArray, 0, maxSize * sizeof(MeshInstance));
+    std::memset(mMeshInstanceArray, 0, mMaxSize * sizeof(MeshInstance));
 
     MeshInstance* nextBlock = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
 

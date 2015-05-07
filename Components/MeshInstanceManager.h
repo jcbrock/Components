@@ -1,11 +1,7 @@
 #ifndef MESH_INSTANCE_MANAGER_H
 #define MESH_INSTANCE_MANAGER_H
 
-#include "ObjectModel\MeshInstance.h"
-
-//for glm  /transofrm stuff
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+class MeshInstance;
 
 class MeshInstanceManager //inherit?
 {

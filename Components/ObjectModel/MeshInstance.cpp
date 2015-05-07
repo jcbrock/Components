@@ -24,6 +24,7 @@ MeshInstance& MeshInstance::operator=(const MeshInstance& obj)
 
 void MeshInstance::Initialize()
 {
+ 
     strcpy(mName, "Unknown");
 }
 
@@ -41,7 +42,7 @@ void MeshInstance::SetName(const std::string& name)
 void MeshInstance::DebugPrint()
 {
     std::cout << mName << std::endl <<
-        "	mVerticesHandle: " << mVertices2.mBufferHandle << std::endl <<
-        "	mUVBufferHandle: " << mUVBuffer2.mBufferHandle << std::endl <<
+        "	mVerticesHandle: " << mVertices.mBufferHandle << std::endl <<
+        "	mUVBufferHandle: " << mUVBuffer.mBufferHandle << std::endl <<
         "	mTextureHandle: " << mTextureHandle << std::endl << std::endl;
 }

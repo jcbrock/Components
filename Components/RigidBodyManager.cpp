@@ -1,18 +1,13 @@
 #include "RigidBodyManager.h"
+#include "ObjectModel\RigidBody.h"
 #include <math.h>
-//#include <iostream>
-//#include <wchar.h>
-//#include <stdlib.h>
-//#include <cstring>
-//#include <cstdlib>
-//#include "ObjectModel\RigidBody.h"
 
 void RigidBodyManager::DebugPrint()
 {
     // pretty dirty with all these casts
     RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
-    for (int i = 0; i < mMaxSize; ++i)
+    for (size_t i = 0; i < mMaxSize; ++i)
     {
         int set = 0;
         char* p = reinterpret_cast<char*>(data)+4;
@@ -31,18 +26,18 @@ void RigidBodyManager::Initialize(unsigned long maxSize)
 {
     mNumberOfAllocatedBlocks = 0;
     mMaxSize = floor(maxSize / sizeof(RigidBody));
-    mRigidBodyArray = new RigidBody[maxSize];
+    mRigidBodyArray = new RigidBody[mMaxSize];
     freeHeadPtr = mRigidBodyArray;
    
     // Not really needed, but nice for debugging
 
-    std::memset(mRigidBodyArray, 0, maxSize * sizeof(RigidBody));
+    std::memset(mRigidBodyArray, 0, mMaxSize * sizeof(RigidBody));
     
     RigidBody* nextBlock = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
     // Set ptr to next free block
     
-    for (unsigned int i = 0; i < mMaxSize - 1; ++i)
+    for (size_t i = 0; i < mMaxSize - 1; ++i)
     {
         // Copy the actual address of the next address into the block
 
@@ -123,7 +118,7 @@ void RigidBodyManager::DestroyRigidBody(unsigned int index)
 //OR CALL DestroyRigidBody during the update loop thru each one
 void RigidBodyManager::CleanupDeletions()
 {
-    for (int i = 0; i < mMaxSize; ++i)
+    for (size_t i = 0; i < mMaxSize; ++i)
     {
         RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
         
@@ -144,7 +139,7 @@ void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
 {
     RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
-    for (int i = 0; i < mMaxSize; ++i)
+    for (size_t i = 0; i < mMaxSize; ++i)
     {
         int set = 0;
         char* p = reinterpret_cast<char*>(data)+4;

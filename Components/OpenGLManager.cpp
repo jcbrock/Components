@@ -26,7 +26,7 @@ void OpenGLManager::InitOtherStuff()
     programID = LoadProgramShaders("Shaders/TransformVertexShader.vertexshader", "Shaders/TextureFragmentShader.fragmentshader");
     // Use our shader
     glUseProgram(programID);
-    GLuint Texture = LoadProgramDDS("uvtemplate.DDS");
+    mTexture = LoadProgramDDS("uvtemplate.DDS");
     mMVPMatrixInputHandle = glGetUniformLocation(programID, "MVP");
     mVertexInputHandle = glGetAttribLocation(programID, "vertexPosition_modelspace");
     mUVCoordinateInputHandle = glGetAttribLocation(programID, "vertexUV");

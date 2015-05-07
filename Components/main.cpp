@@ -1,19 +1,20 @@
 #include <iostream>
 #include "GameObject.h"
-#include "Item.h"
+
+#include "ObjectModel\MeshInstance.h"
+#include "ObjectModel\RigidBody.h"
 
 #include "RigidBodyManager.h"
 #include "MeshInstanceManager.h"
 #include "OpenGLManager.h"
-#include "ObjectModel\RigidBody.h"
 
 #include <thread>
 #include <chrono>
 
 // for page size
-//#include <stdio.h>
 #include <windows.h>
 
+#include <glfw3.h>
 
 //TODO - look at includes, think about dependencies
 extern GLFWwindow* window;
@@ -35,7 +36,7 @@ bool InitializeSubsystems(DWORD memoryPageSize)
 
     ok = ok && openGLm.OpenGLInit();
     rbm.Initialize(memoryPageSize);
-    mim.Initialize(memoryPageSize);
+    mim.Initialize(memoryPageSize*5);
 
     return ok;
 }
@@ -53,61 +54,61 @@ GLfloat leftPaddleData[] = {
     -3.0f, -1.0f, -1.0f,
     -3.0f, -1.0f, 1.0f,
     -3.0f, 1.0f, 1.0f,
-    -2.0f, 1.0f, -1.0f,
+    -2.5f, 1.0f, -1.0f,
     -3.0f, -1.0f, -1.0f,
     -3.0f, 1.0f, -1.0f,
-    -2.0f, -1.0f, 1.0f,
+    -2.5f, -1.0f, 1.0f,
     -3.0f, -1.0f, -1.0f,
-    -2.0f, -1.0f, -1.0f,
-    -2.0f, 1.0f, -1.0f,
-    -2.0f, -1.0f, -1.0f,
+    -2.5f, -1.0f, -1.0f,
+    -2.5f, 1.0f, -1.0f,
+    -2.5f, -1.0f, -1.0f,
     -3.0f, -1.0f, -1.0f,
     -3.0f, -1.0f, -1.0f,
     -3.0f, 1.0f, 1.0f,
     -3.0f, 1.0f, -1.0f,
-    -2.0f, -1.0f, 1.0f,
+    -2.5f, -1.0f, 1.0f,
     -3.0f, -1.0f, 1.0f,
     -3.0f, -1.0f, -1.0f,
     -3.0f, 1.0f, 1.0f,
     -3.0f, -1.0f, 1.0f,
-    -2.0f, -1.0f, 1.0f,
-    -2.0f, 1.0f, 1.0f,
-    -2.0f, -1.0f, -1.0f,
-    -2.0f, 1.0f, -1.0f,
-    -2.0f, -1.0f, -1.0f,
-    -2.0f, 1.0f, 1.0f,
-    -2.0f, -1.0f, 1.0f,
-    -2.0f, 1.0f, 1.0f,
-    -2.0f, 1.0f, -1.0f,
+    -2.5f, -1.0f, 1.0f,
+    -2.5f, 1.0f, 1.0f,
+    -2.5f, -1.0f, -1.0f,
+    -2.5f, 1.0f, -1.0f,
+    -2.5f, -1.0f, -1.0f,
+    -2.5f, 1.0f, 1.0f,
+    -2.5f, -1.0f, 1.0f,
+    -2.5f, 1.0f, 1.0f,
+    -2.5f, 1.0f, -1.0f,
     -3.0f, 1.0f, -1.0f,
-    -2.0f, 1.0f, 1.0f,
+    -2.5f, 1.0f, 1.0f,
     -3.0f, 1.0f, -1.0f,
     -3.0f, 1.0f, 1.0f,
-    -2.0f, 1.0f, 1.0f,
+    -2.5f, 1.0f, 1.0f,
     -3.0f, 1.0f, 1.0f,
-    -2.0f, -1.0f, 1.0f
+    -2.5f, -1.0f, 1.0f
 };
 GLfloat rightPaddleData[] = {
-    3.0f, -1.0f, -1.0f,
-    3.0f, -1.0f, 1.0f,
-    3.0f, 1.0f, 1.0f,
+    4.5f, -1.0f, -1.0f,
+    4.5f, -1.0f, 1.0f,
+    4.5f, 1.0f, 1.0f,
     5.0f, 1.0f, -1.0f,
-    3.0f, -1.0f, -1.0f,
-    3.0f, 1.0f, -1.0f,
+    4.5f, -1.0f, -1.0f,
+    4.5f, 1.0f, -1.0f,
     5.0f, -1.0f, 1.0f,
-    3.0f, -1.0f, -1.0f,
+    4.5f, -1.0f, -1.0f,
     5.0f, -1.0f, -1.0f,
     5.0f, 1.0f, -1.0f,
     5.0f, -1.0f, -1.0f,
-    3.0f, -1.0f, -1.0f,
-    3.0f, -1.0f, -1.0f,
-    3.0f, 1.0f, 1.0f,
-    3.0f, 1.0f, -1.0f,
+    4.5f, -1.0f, -1.0f,
+    4.5f, -1.0f, -1.0f,
+    4.5f, 1.0f, 1.0f,
+    4.5f, 1.0f, -1.0f,
     5.0f, -1.0f, 1.0f,
-    3.0f, -1.0f, 1.0f,
-    3.0f, -1.0f, -1.0f,
-    3.0f, 1.0f, 1.0f,
-    3.0f, -1.0f, 1.0f,
+    4.5f, -1.0f, 1.0f,
+    4.5f, -1.0f, -1.0f,
+    4.5f, 1.0f, 1.0f,
+    4.5f, -1.0f, 1.0f,
     5.0f, -1.0f, 1.0f,
     5.0f, 1.0f, 1.0f,
     5.0f, -1.0f, -1.0f,
@@ -117,12 +118,12 @@ GLfloat rightPaddleData[] = {
     5.0f, -1.0f, 1.0f,
     5.0f, 1.0f, 1.0f,
     5.0f, 1.0f, -1.0f,
-    3.0f, 1.0f, -1.0f,
+    4.5f, 1.0f, -1.0f,
     5.0f, 1.0f, 1.0f,
-    3.0f, 1.0f, -1.0f,
-    3.0f, 1.0f, 1.0f,
+    4.5f, 1.0f, -1.0f,
+    4.5f, 1.0f, 1.0f,
     5.0f, 1.0f, 1.0f,
-    3.0f, 1.0f, 1.0f,
+    4.5f, 1.0f, 1.0f,
     5.0f, -1.0f, 1.0f
 };
 GLfloat ballData[] = {
@@ -207,8 +208,8 @@ GLfloat g_uv_buffer_data[] = {
 
 void Draw(
     const glm::mat4& mvp,
-    const Buffer2& vertexBuffer,
-    const Buffer2&  uvBuffer,
+    const Buffer& vertexBuffer,
+    const Buffer&  uvBuffer,
     const GLuint& textureDataHandle)
 {
     //constants - handles to shader inputs
@@ -266,7 +267,7 @@ void Draw(
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
 {
-    Draw(rigidBody->mMVPForScene, meshInstance->mVertices2, meshInstance->mUVBuffer2, meshInstance->mTextureHandle);
+    Draw(rigidBody->mMVPForScene, meshInstance->mVertices, meshInstance->mUVBuffer, meshInstance->mTextureHandle);
 }
 
 void SetupGameObject(GameObject& obj,
@@ -286,8 +287,8 @@ void SetupGameObject(GameObject& obj,
 
     MeshInstance* objMI = mim.CreateMeshInstance();
     objMI->SetName(obj.GetName() + "MI"); //TODO - don't do plus
-    objMI->mVertices2.Initialize(vertDataSize, vertData);
-    objMI->mUVBuffer2.Initialize(uvDataSize, uvData);
+    objMI->mVertices.Initialize(vertDataSize, vertData);
+    objMI->mUVBuffer.Initialize(uvDataSize, uvData);
     objMI->mTextureHandle = textureHandle;
     obj.SetMeshInstanceComponent(objMI);
 }
@@ -307,9 +308,9 @@ int main()
     GameObject rightPaddle("RightPaddle");
     GameObject ball("Ball");
 
-    SetupGameObject(leftPaddle, sizeof(leftPaddleData), leftPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.Texture);
-    SetupGameObject(rightPaddle, sizeof(rightPaddleData), rightPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.Texture);
-    SetupGameObject(ball, sizeof(ballData), ballData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.Texture);
+    SetupGameObject(leftPaddle, sizeof(leftPaddleData), leftPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
+    SetupGameObject(rightPaddle, sizeof(rightPaddleData), rightPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
+    SetupGameObject(ball, sizeof(ballData), ballData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
 
     leftPaddle.DebugPrint();
     rightPaddle.DebugPrint();

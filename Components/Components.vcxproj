@@ -72,11 +72,9 @@
     <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GameObject2.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeshInstanceManager.cpp" />
-    <ClCompile Include="misc.cpp" />
     <ClCompile Include="ObjectModel\MeshInstance.cpp" />
     <ClCompile Include="ObjectModel\RigidBody.cpp" />
     <ClCompile Include="OpenGLManager.cpp" />
@@ -90,15 +88,12 @@
     <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GameObject2.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MeshInstanceManager.h" />
-    <ClInclude Include="misc.h" />
     <ClInclude Include="ObjectModel\MeshInstance.h" />
     <ClInclude Include="ObjectModel\RigidBody.h" />
     <ClInclude Include="OpenGLManager.h" />
     <ClInclude Include="RigidBodyManager.h" />
-    <ClInclude Include="TestOpenGL.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="backup.txt" />
