@@ -36,7 +36,7 @@ bool InitializeSubsystems(DWORD memoryPageSize)
 
     ok = ok && openGLm.OpenGLInit();
     rbm.Initialize(memoryPageSize);
-    mim.Initialize(memoryPageSize*5);
+    mim.Initialize(memoryPageSize * 5);
 
     return ok;
 }
@@ -208,8 +208,8 @@ GLfloat g_uv_buffer_data[] = {
 
 void Draw(
     const glm::mat4& mvp,
-    const Buffer& vertexBuffer,
-    const Buffer&  uvBuffer,
+    const GLuint& vertexBufferHandle,
+    const GLuint&  uvBufferHandle,
     const GLuint& textureDataHandle)
 {
     //constants - handles to shader inputs
@@ -228,7 +228,7 @@ void Draw(
 
 
     glEnableVertexAttribArray(openGLm.mVertexInputHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.mBufferHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
     glVertexAttribPointer(
         openGLm.mVertexInputHandle,           // The attribute we want to configure
         3,                            // size
@@ -240,7 +240,7 @@ void Draw(
 
     // 2nd attribute buffer : UVs
     glEnableVertexAttribArray(openGLm.mUVCoordinateInputHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer.mBufferHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBufferHandle);
     glVertexAttribPointer(
         openGLm.mUVCoordinateInputHandle,                   // The attribute we want to configure
         2,                            // size : U+V => 2
@@ -267,7 +267,10 @@ void Draw(
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
 {
-    Draw(rigidBody->mMVPForScene, meshInstance->mVertices, meshInstance->mUVBuffer, meshInstance->mTextureHandle);
+    Draw(rigidBody->mMVPForScene,
+        meshInstance->GetVertBufferHandle(),
+        meshInstance->GetUVBufferHandle(),
+        meshInstance->GetTextureHandle());
 }
 
 void SetupGameObject(GameObject& obj,
@@ -280,16 +283,15 @@ void SetupGameObject(GameObject& obj,
     // SETUP RIGID BODIES
 
     RigidBody* objRB = rbm.CreateRigidBody();
-    objRB->mName = obj.GetName() + "RB"; //TODO - don't do plus
+    objRB->mName = obj.GetName() + "RB";
     obj.SetRigidBodyComponent(objRB);
 
     // MESH INSTANCE
 
     MeshInstance* objMI = mim.CreateMeshInstance();
-    objMI->SetName(obj.GetName() + "MI"); //TODO - don't do plus
-    objMI->mVertices.Initialize(vertDataSize, vertData);
-    objMI->mUVBuffer.Initialize(uvDataSize, uvData);
-    objMI->mTextureHandle = textureHandle;
+    objMI->SetName(obj.GetName() + "MI");
+    objMI->SetTexture(uvDataSize, uvData, textureHandle);
+    objMI->SetVertexData(vertDataSize, vertData);
     obj.SetMeshInstanceComponent(objMI);
 }
 
@@ -327,7 +329,7 @@ int main()
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
     while (!endGameLoop)
     {
-        
+
         timeDelta += .1;
         std::cout << "Timedelta: " << timeDelta << std::endl;
         rbm.DebugPrint();

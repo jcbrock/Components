@@ -2,6 +2,8 @@
 #include "ObjectModel\MeshInstance.h"
 
 #include <math.h>
+#include <cstring>
+#include <assert.h>
 
 void MeshInstanceManager::DebugPrint()
 {
@@ -30,9 +32,8 @@ void MeshInstanceManager::Initialize(unsigned long maxSize)
     mMaxSize = floor(maxSize / sizeof(MeshInstance));
    
     mNumberOfAllocatedBlocks = 0;
-  //  mMaxSize = maxSize;
 
-    //don't want to actually create the mesh instances yet, so just setting space
+    // We don't want to actually create the mesh instances yet, so just setup the space
     mMeshInstanceArray = new char[mMaxSize * sizeof(MeshInstance)];
     freeHeadPtr = mMeshInstanceArray;
 
@@ -50,56 +51,33 @@ void MeshInstanceManager::Initialize(unsigned long maxSize)
 
         MeshInstance* currentBlock = nextBlock;
         ++nextBlock;
-        std::memcpy(currentBlock, &nextBlock, sizeof(void*)); // Assuming 4 byte pointer
+        std::memcpy(currentBlock, &nextBlock, sizeof(void*));
     }
 
     std::memset(nextBlock, 0, sizeof(void*));
-
 }
-
 
 MeshInstance* MeshInstanceManager::CreateMeshInstance()
 {
-    // If there is no room, freeHeadPtr will be null
+    // If there is no room, and we try to create instance, this will assert
+    assert(freeHeadPtr);
 
-    if (!freeHeadPtr)
-    {
-        //assert - TODO
-        return nullptr;
-    }
+    // Save location of current free block and update headPtr to next free block
 
-
-    // Save pointer to current block and jump head to next free block
-    // Note: Make sure to update freeHeadPtr itself, not what it points to
-    //		If this is the last block, it will be nullptr
-    void* aboutToBeAllocated = freeHeadPtr;
-    std::memcpy(&freeHeadPtr, freeHeadPtr, 4);
-
-    // Create new MeshInstance in this block
-    // Fuck, this is the part about how I don't know if this is possible without custom allocator
-    MeshInstance* ptr = reinterpret_cast <MeshInstance*>(aboutToBeAllocated);
-
-    // This...heopfully...blows away w/e was in this ptr
-    // again, probably wasteful. Ideally I create the object in the block,
-    // not on the stack then copy it...
-    MeshInstance mi;
-    mi.Initialize();
-    std::memcpy(ptr, &mi, sizeof(mi));
+    void* freeBlock = freeHeadPtr;
+    std::memcpy(&freeHeadPtr, freeHeadPtr, sizeof(void*));
 
     ++mNumberOfAllocatedBlocks;
 
-    return ptr;
+    // Construct a new mesh instance in the block and return it
+
+    return new(freeBlock)MeshInstance();
 }
 
 //TODO - how do I know the index?
 void MeshInstanceManager::DestroyMeshInstance(unsigned int index)
 {
-    if (mNumberOfAllocatedBlocks == 0)
-    {
-        //assert - TODO
-        return;
-    }
-
+    assert(mNumberOfAllocatedBlocks != 0);
 
     // Get pointer to block, free it (i.e. just memset it to 0? That is...a bad idea? Cuz I don't
     // call destructor? Then again, do I... need to?)
@@ -133,7 +111,7 @@ void MeshInstanceManager::CleanupDeletions()
         char* p = reinterpret_cast<char*>(data)+4;
 
         std::memcpy(&set, p, 4);
-        if (set != 0 && data->mMarkedForDeletion)
+        if (set != 0 && data->IsMarkedForDeletion())
         {
             DestroyMeshInstance(i);
         }
@@ -154,7 +132,7 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
         std::memcpy(&set, p, 4);
         if (set != 0)
         {
-            if (data->mMarkedForDeletion) //maybe this is set by an event
+            if (data->IsMarkedForDeletion()) //maybe this is set by an event
             {
                 DestroyMeshInstance(i);
             }
