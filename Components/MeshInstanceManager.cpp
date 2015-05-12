@@ -5,32 +5,12 @@
 #include <cstring>
 #include <assert.h>
 
-void MeshInstanceManager::DebugPrint()
-{
-    // pretty dirty with all these casts
-    MeshInstance* data = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
-
-    for (int i = 0; i < mMaxSize; ++i)
-    {
-        int set = 0;
-        char* p = reinterpret_cast<char*>(data)+4;
-
-        std::memcpy(&set, p, 4);
-        if (set != 0)
-        {
-            (*data).DebugPrint();
-        }
-
-        ++data;
-    }
-}
-
 //TODO - issue -> MeshInstance is like 4k bytes cuz it holds bufferData
 // so it is like...a page per instance, how do I make that more memory friendly?
 void MeshInstanceManager::Initialize(unsigned long maxSize)
 {
     mMaxSize = floor(maxSize / sizeof(MeshInstance));
-   
+
     mNumberOfAllocatedBlocks = 0;
 
     // We don't want to actually create the mesh instances yet, so just setup the space
@@ -74,17 +54,16 @@ MeshInstance* MeshInstanceManager::CreateMeshInstance()
     return new(freeBlock)MeshInstance();
 }
 
-//TODO - how do I know the index?
 void MeshInstanceManager::DestroyMeshInstance(unsigned int index)
 {
     assert(mNumberOfAllocatedBlocks != 0);
 
-    // Get pointer to block, free it (i.e. just memset it to 0? That is...a bad idea? Cuz I don't
-    // call destructor? Then again, do I... need to?)
-
     // Clear the block
+    // There is no "placement delete" - have to cleanup myself
+    // http://www.stroustrup.com/bs_faq2.html#placement-delete
 
-    MeshInstance* ptr = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
+    MeshInstance* ptr = reinterpret_cast <MeshInstance*>(mMeshInstanceArray); //TODO - can this be a different cast?
+    ptr[index].~MeshInstance();
     std::memset(&ptr[index], 0, sizeof(MeshInstance));
 
     // Update pointer to the next free block (which is currently the head)
@@ -99,25 +78,18 @@ void MeshInstanceManager::DestroyMeshInstance(unsigned int index)
     --mNumberOfAllocatedBlocks;
 }
 
-
-//OR CALL DestroyMeshInstance during the update loop thru each one
-void MeshInstanceManager::CleanupDeletions()
+// Checks to see if block is populated. We check some bytes after the
+// first 4 (because those bytes point to the next free block) to see
+// if they are populated. Obviously this relies on empty blocks being memset
+// to zero when they are initialized/freed.
+bool MeshInstanceManager::IsBlockFilled(MeshInstance* block) const
 {
-    for (int i = 0; i < mMaxSize; ++i)
-    {
-        MeshInstance* data = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
+    int set = 0;
+    char* p = reinterpret_cast<char*>(block)+4;
 
-        int set = 0;
-        char* p = reinterpret_cast<char*>(data)+4;
+    std::memcpy(&set, p, 4);
 
-        std::memcpy(&set, p, 4);
-        if (set != 0 && data->IsMarkedForDeletion())
-        {
-            DestroyMeshInstance(i);
-        }
-
-        ++data;
-    }
+    return set != 0;
 }
 
 void MeshInstanceManager::UpdateSubsystem(float timeDelta)
@@ -126,11 +98,7 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
 
     for (int i = 0; i < mMaxSize; ++i)
     {
-        int set = 0;
-        char* p = reinterpret_cast<char*>(data)+4;
-
-        std::memcpy(&set, p, 4);
-        if (set != 0)
+        if (IsBlockFilled(data))
         {
             if (data->IsMarkedForDeletion()) //maybe this is set by an event
             {
@@ -141,4 +109,20 @@ void MeshInstanceManager::UpdateSubsystem(float timeDelta)
         ++data;
     }
 
+}
+
+void MeshInstanceManager::DebugPrint()
+{
+    // pretty dirty with all these casts
+    MeshInstance* data = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
+
+    for (int i = 0; i < mMaxSize; ++i)
+    {
+        if (IsBlockFilled(data))
+        {
+            (*data).DebugPrint();
+        }
+
+        ++data;
+    }
 }

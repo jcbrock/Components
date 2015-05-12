@@ -12,7 +12,10 @@ Buffer::~Buffer()
     if (mInitialized)
     {
         std::cout << "Buffer destroyed" << std::endl;
-        delete[] mBufferData;
+        glDeleteBuffers(1, &mBufferHandle);
+
+        // No need to call delete - was holding data on the stack
+        //delete[] mBufferData;
     }
 }
 

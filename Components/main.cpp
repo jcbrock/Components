@@ -263,6 +263,8 @@ void Draw(
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
 
     glDisableVertexAttribArray(openGLm.mVertexInputHandle);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0); //clear the binding
 }
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
@@ -350,7 +352,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         //endGameLoop = true;
     }
