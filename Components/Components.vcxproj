@@ -81,6 +81,7 @@
     <ClCompile Include="OpenGL\OpenGL.cpp" />
     <ClCompile Include="RigidBodyManager.cpp" />
     <ClCompile Include="TestOpenGL.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.h" />
@@ -94,6 +95,7 @@
     <ClInclude Include="ObjectModel\RigidBody.h" />
     <ClInclude Include="OpenGLManager.h" />
     <ClInclude Include="RigidBodyManager.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="backup.txt" />

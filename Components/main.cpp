@@ -8,6 +8,8 @@
 #include "MeshInstanceManager.h"
 #include "OpenGLManager.h"
 
+#include "Timer.h"
+
 #include <thread>
 #include <chrono>
 
@@ -328,20 +330,59 @@ int main()
 
     bool endGameLoop = false;
     float timeDelta = 1;
+    Timer timer;
+    timer.Initialize();
+    __int64 previousTime = 0;
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
+    reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 0.001f;
+
+    unsigned int framesUnder15 = 0;
+    unsigned int frames15to20 = 0;
+    unsigned int framesOver20 = 0;
+    unsigned int framesUntilPrint = 100;
     while (!endGameLoop)
     {
 
-        timeDelta += .1;
-        std::cout << "Timedelta: " << timeDelta << std::endl;
-        rbm.DebugPrint();
+        if (reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x < -3 ||
+            reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x > 3)
+        {
+            reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection.x *= -1;
+        }
 
+        __int64 currentTime = timer.GetTime();
+        __int64 deltaTime = currentTime - previousTime;
 
+        if (deltaTime < 15)
+            ++framesUnder15;
+        else if (deltaTime > 20)
+            ++framesOver20;
+        else
+            ++frames15to20;
+
+        --framesUntilPrint;
+        if (framesUntilPrint == 0)
+        {
+            std::cout << "framesUnder15: " << framesUnder15 << std::endl;
+            std::cout << "frames15to20:  " << frames15to20 << std::endl;
+            std::cout << "framesOver20:  " << framesOver20 << std::endl;
+
+            framesUntilPrint = 400;
+        }
+
+        //std::cout << "(total)      Time from CPU: " << currentTime << std::endl;
+
+        //if (deltaTime > 17)
+       // std::cout << "(last frame) Time from CPU: " << deltaTime << std::endl;
+        
+        previousTime = currentTime;
+        //rbm.DebugPrint();
+
+       
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Update subsystems
-        UpdateSubsystems(timeDelta);
+        UpdateSubsystems(deltaTime);
 
         // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?
         Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent()));
@@ -352,7 +393,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         //endGameLoop = true;
     }
