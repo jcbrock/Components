@@ -11,12 +11,14 @@ public:
     void UpdateSubsystem(float timeDelta); //inherit?
     MeshInstance* CreateMeshInstance(); //returns a handle to MeshInstance
     
-    void CleanupDeletions();
-
     void MarkMeshInstanceForDelete(int index);
     void DestroyMeshInstance(unsigned int index);
     
     void DebugPrint();
+
+private:
+    bool IsBlockFilled(MeshInstance* block) const;
+
 private:
 
     void* mMeshInstanceArray; //space for 8 RBs for now.
