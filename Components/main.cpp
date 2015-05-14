@@ -13,8 +13,12 @@
 #include <thread>
 #include <chrono>
 
-// for page size
+// for page size / vsync stuff
 #include <windows.h>
+
+// vsync stuff
+//#include "wglext.h"
+#include <GL\wglew.h>
 
 #include <glfw3.h>
 
@@ -23,6 +27,9 @@ extern GLFWwindow* window;
 RigidBodyManager rbm;
 MeshInstanceManager mim;
 OpenGLManager openGLm;
+unsigned int framesUntilPrint = 100;
+Timer timer;
+
 
 void UpdateSubsystems(float timeDelta)
 {
@@ -39,6 +46,7 @@ bool InitializeSubsystems(DWORD memoryPageSize)
     ok = ok && openGLm.OpenGLInit();
     rbm.Initialize(memoryPageSize);
     mim.Initialize(memoryPageSize * 5);
+    timer.Initialize();
 
     return ok;
 }
@@ -223,12 +231,13 @@ void Draw(
 
     // Send our transformation to the currently bound shader, 
     // in the "MVP" uniform
-
+  
+    
     glUniformMatrix4fv(openGLm.mMVPMatrixInputHandle, 1, GL_FALSE, &mvp[0][0]);
-
+   
     // 1rst attribute buffer : vertices
 
-
+    
     glEnableVertexAttribArray(openGLm.mVertexInputHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
     glVertexAttribPointer(
@@ -251,7 +260,8 @@ void Draw(
         0,                            // stride
         (void*)0                      // array buffer offset
         );
-
+   
+  
     //SETUP FRAGMENT SHADER INPUTS
     // Bind our texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
@@ -260,21 +270,33 @@ void Draw(
     glUniform1i(openGLm.mTextureInputHandle, 0);
     //END FRAG
 
-
+   
     // Draw the triangles !
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
+
+  
 
     glDisableVertexAttribArray(openGLm.mVertexInputHandle);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); //clear the binding
+
+    
 }
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
 {
+    // currentTime = timer.GetTime();
+
     Draw(rigidBody->mMVPForScene,
         meshInstance->GetVertBufferHandle(),
         meshInstance->GetUVBufferHandle(),
         meshInstance->GetTextureHandle());
+  //  if (framesUntilPrint == 1)
+  //  {
+  //      __int64 currentTime2 = timer.GetTime();
+  //      std::cout << "time of Draw sample: " << currentTime2 - currentTime << std::endl;
+
+  //  }
 }
 
 void SetupGameObject(GameObject& obj,
@@ -299,14 +321,62 @@ void SetupGameObject(GameObject& obj,
     obj.SetMeshInstanceComponent(objMI);
 }
 
+//bool WGLExtensionSupported(const char *extension_name)
+//{
+//    // this is pointer to function which returns pointer to string with list of all wgl extensions
+//    PFNWGLGETEXTENSIONSSTRINGEXTPROC _wglGetExtensionsStringEXT = NULL;
+//
+//    // determine pointer to wglGetExtensionsStringEXT function
+//    _wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
+//
+//    if (strstr(_wglGetExtensionsString(), extension_name) == NULL)
+//    {
+//        // string was not found
+//        return false;
+//    }
+//
+//    // extension is supported
+//    return true;
+//}
+
+
+
 int main()
 {
+    //PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+   // wglSwapIntervalEXT(false); // false to disable, true to enable
+
+
+
+    /*
+    PFNWGLSWAPINTERVALEXTPROC       wglSwapIntervalEXT = NULL;
+    PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
+
+    if (WGLExtensionSupported("WGL_EXT_swap_control"))
+    {
+        // Extension is supported, init pointers.
+        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)LogGetProcAddress("wglSwapIntervalEXT");
+
+        // this is another function from WGL_EXT_swap_control extension
+        wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)LogGetProcAddress("wglGetSwapIntervalEXT");
+
+    }*/
     // INIT SUBSYSTEMS - OpenGL, RigidyBodyManager, MeshInstanceManager
 
     SYSTEM_INFO si;
     GetSystemInfo(&si);
 
     InitializeSubsystems(si.dwPageSize);
+
+#ifdef _WIN32
+    // Turn off vertical screen sync under Windows.
+    // (I.e. it uses the WGL_EXT_swap_control extension)
+    typedef BOOL(WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+    PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    if (wglSwapIntervalEXT)
+        wglSwapIntervalEXT(0);
+#endif
 
     // SETUP GAME OBJECTS
 
@@ -330,16 +400,18 @@ int main()
 
     bool endGameLoop = false;
     float timeDelta = 1;
-    Timer timer;
-    timer.Initialize();
+    
     __int64 previousTime = 0;
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 0.001f;
 
+    unsigned int framesUnder5 = 0;
     unsigned int framesUnder15 = 0;
     unsigned int frames15to20 = 0;
     unsigned int framesOver20 = 0;
-    unsigned int framesUntilPrint = 100;
+   
+   // wglSwapInterval(1);
+
     while (!endGameLoop)
     {
 
@@ -352,7 +424,9 @@ int main()
         __int64 currentTime = timer.GetTime();
         __int64 deltaTime = currentTime - previousTime;
 
-        if (deltaTime < 15)
+        if (deltaTime < 5)
+            ++framesUnder5;
+        else if (deltaTime >= 5 && deltaTime < 15)
             ++framesUnder15;
         else if (deltaTime > 20)
             ++framesOver20;
@@ -362,11 +436,12 @@ int main()
         --framesUntilPrint;
         if (framesUntilPrint == 0)
         {
-            std::cout << "framesUnder15: " << framesUnder15 << std::endl;
+            std::cout << "framesUnder5: " << framesUnder5 << std::endl;
+            std::cout << "frames5to15:  " << framesUnder15 << std::endl;
             std::cout << "frames15to20:  " << frames15to20 << std::endl;
             std::cout << "framesOver20:  " << framesOver20 << std::endl;
 
-            framesUntilPrint = 400;
+            framesUntilPrint = 2500;
         }
 
         //std::cout << "(total)      Time from CPU: " << currentTime << std::endl;
@@ -381,18 +456,73 @@ int main()
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //__int64 currentTime11 = timer.GetTime();
+        glFinish();
+        __int64 currentTime101 = timer.GetTime();
         //Update subsystems
         UpdateSubsystems(deltaTime);
 
+        __int64 currentTime11 = timer.GetTime();
+      
+        void* ballMI = ball.GetMeshInstanceComponent();
+        void* ballBR = ball.GetRigidBodyComponent();
+         
+        __int64 currentTime111 = timer.GetTime();
+       
+
+        MeshInstance* meshInstance = reinterpret_cast<MeshInstance*>(ballMI);
+        RigidBody* rigidBody = reinterpret_cast<RigidBody*>(ballBR);
+        __int64 currentTime1111 = timer.GetTime();
+       
+
         // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?
         Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent()));
+        glFinish();
+        __int64 currentTime12 = timer.GetTime();
+       
         Draw(reinterpret_cast<MeshInstance*>(leftPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(leftPaddle.GetRigidBodyComponent()));
+        glFinish();
+        __int64 currentTime13 = timer.GetTime();
+        
         Draw(reinterpret_cast<MeshInstance*>(rightPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(rightPaddle.GetRigidBodyComponent()));
+        glFinish();
+      
+        __int64 currentTime2 = timer.GetTime();
 
         // Swap buffers
         glfwSwapBuffers(window);
+        
+
+
+
+        glFinish();
+        __int64 currentTime21 = timer.GetTime();
         glfwPollEvents();
 
+        __int64 currentTime22 = timer.GetTime();
+
+
+
+        glFinish();
+
+        __int64 currentTime3 = timer.GetTime();
+        if (framesUntilPrint == 1)
+        {
+            std::cout << "time of first flush: " << currentTime101 - currentTime << std::endl;
+
+            std::cout << "time of update: " << currentTime11 - currentTime101 << std::endl;
+            std::cout << "time of get components: " << currentTime111 - currentTime11 << std::endl;
+            std::cout << "time of reintrepret casts: " << currentTime1111 - currentTime111 << std::endl;
+            std::cout << "time of draw1: " << currentTime12 - currentTime11 << std::endl;
+            std::cout << "time of draw2: " << currentTime13 - currentTime12 << std::endl;
+            std::cout << "time of draw3: " << currentTime2 - currentTime13 << std::endl;
+            std::cout << "total of draws: " << currentTime2 - currentTime1111 << std::endl;
+
+           
+            std::cout << "time of swaps: " << currentTime21 - currentTime2 << std::endl;
+            std::cout << "time of poll : " << currentTime22 - currentTime21 << std::endl;
+            std::cout << "time of glFinish: " << currentTime3 - currentTime22 << std::endl;
+        }
         //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         //endGameLoop = true;
