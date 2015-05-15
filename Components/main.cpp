@@ -362,13 +362,13 @@ void Draw(
 
     // Send our transformation to the currently bound shader, 
     // in the "MVP" uniform
-  
-    
+
+
     glUniformMatrix4fv(openGLm.mMVPMatrixInputHandle, 1, GL_FALSE, &mvp[0][0]);
-   
+
     // 1rst attribute buffer : vertices
 
-    
+
     glEnableVertexAttribArray(openGLm.mVertexInputHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
     glVertexAttribPointer(
@@ -391,8 +391,8 @@ void Draw(
         0,                            // stride
         (void*)0                      // array buffer offset
         );
-   
-  
+
+
     //SETUP FRAGMENT SHADER INPUTS
     // Bind our texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
@@ -401,17 +401,17 @@ void Draw(
     glUniform1i(openGLm.mTextureInputHandle, 0);
     //END FRAG
 
-   
+
     // Draw the triangles !
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
 
-  
+
 
     glDisableVertexAttribArray(openGLm.mVertexInputHandle);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); //clear the binding
 
-    
+
 }
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
@@ -422,12 +422,12 @@ void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
         meshInstance->GetVertBufferHandle(),
         meshInstance->GetUVBufferHandle(),
         meshInstance->GetTextureHandle());
-  //  if (framesUntilPrint == 1)
-  //  {
-  //      __int64 currentTime2 = timer.GetTime();
-  //      std::cout << "time of Draw sample: " << currentTime2 - currentTime << std::endl;
+    //  if (framesUntilPrint == 1)
+    //  {
+    //      __int64 currentTime2 = timer.GetTime();
+    //      std::cout << "time of Draw sample: " << currentTime2 - currentTime << std::endl;
 
-  //  }
+    //  }
 }
 
 void SetupGameObject(GameObject& obj,
@@ -475,7 +475,7 @@ void SetupGameObject(GameObject& obj,
 int main()
 {
     //PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-   // wglSwapIntervalEXT(false); // false to disable, true to enable
+    // wglSwapIntervalEXT(false); // false to disable, true to enable
 
 
 
@@ -485,11 +485,11 @@ int main()
 
     if (WGLExtensionSupported("WGL_EXT_swap_control"))
     {
-        // Extension is supported, init pointers.
-        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)LogGetProcAddress("wglSwapIntervalEXT");
+    // Extension is supported, init pointers.
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)LogGetProcAddress("wglSwapIntervalEXT");
 
-        // this is another function from WGL_EXT_swap_control extension
-        wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)LogGetProcAddress("wglGetSwapIntervalEXT");
+    // this is another function from WGL_EXT_swap_control extension
+    wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)LogGetProcAddress("wglGetSwapIntervalEXT");
 
     }*/
     // INIT SUBSYSTEMS - OpenGL, RigidyBodyManager, MeshInstanceManager
@@ -542,7 +542,7 @@ int main()
 
     while (!endGameLoop)
     {
-        
+
         if (reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x < -3 ||
             reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x > 3)
         {
@@ -550,8 +550,8 @@ int main()
         }
 
         __int64 currentTime = timer.GetTime();
-      
-        
+
+
         //rbm.DebugPrint();
 
         // Clear the screen
@@ -561,10 +561,10 @@ int main()
         ra.AddElement(currentTime - previousTime);
         previousTime = currentTime;
         UpdateSubsystems(ra.GetRunningAvg());
-      
+
         void* ballMI = ball.GetMeshInstanceComponent();
         void* ballBR = ball.GetRigidBodyComponent();
-         
+
         MeshInstance* meshInstance = reinterpret_cast<MeshInstance*>(ballMI);
         RigidBody* rigidBody = reinterpret_cast<RigidBody*>(ballBR);
 
