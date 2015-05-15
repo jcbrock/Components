@@ -30,8 +30,139 @@ OpenGLManager openGLm;
 unsigned int framesUntilPrint = 100;
 Timer timer;
 
+class FrameTimeRunningAvg
+{
+public:
+    FrameTimeRunningAvg(uint8_t maxNumOfElements);
+    ~FrameTimeRunningAvg();
 
-void UpdateSubsystems(float timeDelta)
+    //other constructors?
+    FrameTimeRunningAvg() = delete;
+    FrameTimeRunningAvg(const FrameTimeRunningAvg&) = delete;
+    // FrameTimeRunningAvg&(FrameTimeRunningAvg&&) = delete;
+
+    void AddElement(__int64 element);
+    double GetRunningAvg() const;
+
+private:
+    double mRunningAvg = 0;
+    uint32_t mCurrentSum = 0;
+    uint16_t* mData;
+    uint8_t mCurrentNumOfElements = 0;
+    uint8_t mMaNumberOfElements = 0;
+    uint8_t currentIndex = 0;
+
+    uint32_t framesUnder5 = 0;
+    uint32_t framesUnder15 = 0;
+    uint32_t frames15to20 = 0;
+    uint32_t framesOver20 = 0;
+};
+
+FrameTimeRunningAvg::FrameTimeRunningAvg(uint8_t maxNumOfElements) : mMaNumberOfElements(maxNumOfElements)
+{
+    mData = new uint16_t[mMaNumberOfElements];
+    std::memset(mData, 0, sizeof(uint16_t)* mMaNumberOfElements);
+    //init to 0?
+}
+
+FrameTimeRunningAvg::~FrameTimeRunningAvg()
+{
+    delete[] mData;
+}
+
+void FrameTimeRunningAvg::AddElement(__int64 element)
+{
+    // Since this is a running average of frame time ms, we're assuming very small
+    // numbers (i.e. under 5000ms for sure). If it is over 5000ms, I probably put
+    // a breakpoint and am debugging - so just discard.
+
+    // element should never be less than 0, otherwise my currentime - previoustime is really f'd up
+    if (element < 0 || element > 5000)
+    {
+        return;
+    }
+
+    //so increasing 1 bit means I double the space of my previous
+    // thus the first bit increase, I can store 2 of my previous max number
+    // the next bit increase, I can store 4 of the original max number
+    // etc..
+    // 1 byte increase means I can store 2^8 (256) times of the original max
+    // 2 byte increase means I can store 2^16 times of the original max
+    // so int32 can store 2^16 of MAX_INT16
+    // so if I store int16 in the array, and only have like 10 elements,
+    // then I need like 3 extra bits for my sum total to never overflow
+
+
+    // Again, since low numbers, I know the sum isn't going to overflow.
+    // I could do the add/remove averages approach, but that is susceptiable to
+    // floating point error
+
+    if (mCurrentNumOfElements == mMaNumberOfElements)
+    {
+        // currentAvg -= mData[currentIndex] / (double)mMaNumberOfElements;
+        mCurrentSum -= mData[currentIndex];
+        mData[currentIndex] = (uint16_t)element; //this is safe because I cap it at 5000 max anyway
+        //currentAvg += mData[currentIndex] / (double)mMaNumberOfElements;
+        mCurrentSum += mData[currentIndex];
+    }
+    else
+    {
+        mData[currentIndex] = (uint16_t)element;
+        mCurrentSum += mData[currentIndex];
+        ++mCurrentNumOfElements;
+        //currentAvg = 0;
+        //for (int i = 0; i < mCurrentNumOfElements; i++)
+        //{
+        //    currentAvg += mData[i] / mCurrentNumOfElements;
+        //}
+    }
+
+    mRunningAvg = (double)mCurrentSum / mCurrentNumOfElements;
+
+    if (currentIndex + 1 == mMaNumberOfElements)
+        currentIndex = 0;
+    else
+        ++currentIndex;
+
+
+    //static unsigned int framesUntilPrint
+
+
+
+    if (element < 5)
+        ++framesUnder5;
+    else if (element >= 5 && element < 15)
+        ++framesUnder15;
+    else if (element >= 15 && element < 20)
+        ++frames15to20;
+    else
+        ++framesOver20;
+
+
+    --framesUntilPrint;
+    if (framesUntilPrint == 0)
+    {
+        std::cout << "framesUnder5: " << framesUnder5 << std::endl;
+        std::cout << "frames5to15:  " << framesUnder15 << std::endl;
+        std::cout << "frames15to20:  " << frames15to20 << std::endl;
+        std::cout << "framesOver20:  " << framesOver20 << std::endl;
+
+        framesUntilPrint = 2500;
+    }
+
+
+
+}
+
+double FrameTimeRunningAvg::GetRunningAvg() const
+{
+    return mRunningAvg;
+    //return currentAvg;
+}
+
+
+
+void UpdateSubsystems(double timeDelta)
 {
     rbm.UpdateSubsystem(timeDelta);
     mim.UpdateSubsystem(timeDelta);
@@ -368,6 +499,7 @@ int main()
 
     InitializeSubsystems(si.dwPageSize);
 
+    //note this has to be done after openGL context is initialized. move this to somewhere better
 #ifdef _WIN32
     // Turn off vertical screen sync under Windows.
     // (I.e. it uses the WGL_EXT_swap_control extension)
@@ -400,21 +532,17 @@ int main()
 
     bool endGameLoop = false;
     float timeDelta = 1;
-    
+    float avgDelta = 0;
+    RunningAvg ra(10);
+
     __int64 previousTime = 0;
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 0.001f;
 
-    unsigned int framesUnder5 = 0;
-    unsigned int framesUnder15 = 0;
-    unsigned int frames15to20 = 0;
-    unsigned int framesOver20 = 0;
-   
-   // wglSwapInterval(1);
 
     while (!endGameLoop)
     {
-
+        
         if (reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x < -3 ||
             reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x > 3)
         {
@@ -422,109 +550,34 @@ int main()
         }
 
         __int64 currentTime = timer.GetTime();
-        __int64 deltaTime = currentTime - previousTime;
-
-        if (deltaTime < 5)
-            ++framesUnder5;
-        else if (deltaTime >= 5 && deltaTime < 15)
-            ++framesUnder15;
-        else if (deltaTime > 20)
-            ++framesOver20;
-        else
-            ++frames15to20;
-
-        --framesUntilPrint;
-        if (framesUntilPrint == 0)
-        {
-            std::cout << "framesUnder5: " << framesUnder5 << std::endl;
-            std::cout << "frames5to15:  " << framesUnder15 << std::endl;
-            std::cout << "frames15to20:  " << frames15to20 << std::endl;
-            std::cout << "framesOver20:  " << framesOver20 << std::endl;
-
-            framesUntilPrint = 2500;
-        }
-
-        //std::cout << "(total)      Time from CPU: " << currentTime << std::endl;
-
-        //if (deltaTime > 17)
-       // std::cout << "(last frame) Time from CPU: " << deltaTime << std::endl;
+      
         
-        previousTime = currentTime;
         //rbm.DebugPrint();
 
-       
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //__int64 currentTime11 = timer.GetTime();
-        glFinish();
-        __int64 currentTime101 = timer.GetTime();
         //Update subsystems
-        UpdateSubsystems(deltaTime);
-
-        __int64 currentTime11 = timer.GetTime();
+        ra.AddElement(currentTime - previousTime);
+        previousTime = currentTime;
+        UpdateSubsystems(ra.GetRunningAvg());
       
         void* ballMI = ball.GetMeshInstanceComponent();
         void* ballBR = ball.GetRigidBodyComponent();
          
-        __int64 currentTime111 = timer.GetTime();
-       
-
         MeshInstance* meshInstance = reinterpret_cast<MeshInstance*>(ballMI);
         RigidBody* rigidBody = reinterpret_cast<RigidBody*>(ballBR);
-        __int64 currentTime1111 = timer.GetTime();
-       
 
         // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?
         Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent()));
-        glFinish();
-        __int64 currentTime12 = timer.GetTime();
-       
         Draw(reinterpret_cast<MeshInstance*>(leftPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(leftPaddle.GetRigidBodyComponent()));
-        glFinish();
-        __int64 currentTime13 = timer.GetTime();
-        
         Draw(reinterpret_cast<MeshInstance*>(rightPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(rightPaddle.GetRigidBodyComponent()));
-        glFinish();
-      
-        __int64 currentTime2 = timer.GetTime();
 
         // Swap buffers
         glfwSwapBuffers(window);
-        
-
-
-
-        glFinish();
-        __int64 currentTime21 = timer.GetTime();
         glfwPollEvents();
 
-        __int64 currentTime22 = timer.GetTime();
-
-
-
-        glFinish();
-
-        __int64 currentTime3 = timer.GetTime();
-        if (framesUntilPrint == 1)
-        {
-            std::cout << "time of first flush: " << currentTime101 - currentTime << std::endl;
-
-            std::cout << "time of update: " << currentTime11 - currentTime101 << std::endl;
-            std::cout << "time of get components: " << currentTime111 - currentTime11 << std::endl;
-            std::cout << "time of reintrepret casts: " << currentTime1111 - currentTime111 << std::endl;
-            std::cout << "time of draw1: " << currentTime12 - currentTime11 << std::endl;
-            std::cout << "time of draw2: " << currentTime13 - currentTime12 << std::endl;
-            std::cout << "time of draw3: " << currentTime2 - currentTime13 << std::endl;
-            std::cout << "total of draws: " << currentTime2 - currentTime1111 << std::endl;
-
-           
-            std::cout << "time of swaps: " << currentTime21 - currentTime2 << std::endl;
-            std::cout << "time of poll : " << currentTime22 - currentTime21 << std::endl;
-            std::cout << "time of glFinish: " << currentTime3 - currentTime22 << std::endl;
-        }
         //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
         //endGameLoop = true;
     }
 

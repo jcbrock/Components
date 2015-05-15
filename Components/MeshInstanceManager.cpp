@@ -92,7 +92,7 @@ bool MeshInstanceManager::IsBlockFilled(MeshInstance* block) const
     return set != 0;
 }
 
-void MeshInstanceManager::UpdateSubsystem(float timeDelta)
+void MeshInstanceManager::UpdateSubsystem(double timeDelta)
 {
     MeshInstance* data = reinterpret_cast <MeshInstance*>(mMeshInstanceArray);
 

@@ -135,7 +135,7 @@ void RigidBodyManager::CleanupDeletions()
     }
 }
 
-void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
+void RigidBodyManager::UpdateSubsystem(double timeDelta)
 {
     RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
