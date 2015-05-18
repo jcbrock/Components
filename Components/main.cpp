@@ -41,17 +41,18 @@ public:
     FrameTimeRunningAvg(const FrameTimeRunningAvg&) = delete;
     // FrameTimeRunningAvg&(FrameTimeRunningAvg&&) = delete;
 
-    void AddElement(__int64 element);
+    void AddElement(double element);
     double GetRunningAvg() const;
 
 private:
     double mRunningAvg = 0;
-    uint32_t mCurrentSum = 0;
-    uint16_t* mData;
+    double mCurrentSum = 0; //shit, how much error are these fp's going to have
+    double* mData;
     uint8_t mCurrentNumOfElements = 0;
     uint8_t mMaNumberOfElements = 0;
     uint8_t currentIndex = 0;
 
+    uint32_t zeroFrames = 0;
     uint32_t framesUnder5 = 0;
     uint32_t framesUnder15 = 0;
     uint32_t frames15to20 = 0;
@@ -60,9 +61,8 @@ private:
 
 FrameTimeRunningAvg::FrameTimeRunningAvg(uint8_t maxNumOfElements) : mMaNumberOfElements(maxNumOfElements)
 {
-    mData = new uint16_t[mMaNumberOfElements];
-    std::memset(mData, 0, sizeof(uint16_t)* mMaNumberOfElements);
-    //init to 0?
+    mData = new double[mMaNumberOfElements];
+    std::memset(mData, 0, sizeof(double)* mMaNumberOfElements);
 }
 
 FrameTimeRunningAvg::~FrameTimeRunningAvg()
@@ -70,7 +70,7 @@ FrameTimeRunningAvg::~FrameTimeRunningAvg()
     delete[] mData;
 }
 
-void FrameTimeRunningAvg::AddElement(__int64 element)
+void FrameTimeRunningAvg::AddElement(double element)
 {
     // Since this is a running average of frame time ms, we're assuming very small
     // numbers (i.e. under 5000ms for sure). If it is over 5000ms, I probably put
@@ -93,43 +93,31 @@ void FrameTimeRunningAvg::AddElement(__int64 element)
     // then I need like 3 extra bits for my sum total to never overflow
 
 
-    // Again, since low numbers, I know the sum isn't going to overflow.
-    // I could do the add/remove averages approach, but that is susceptiable to
-    // floating point error
+    // Again, since I'm getting rid of high numbers, I know the sum isn't going to overflow.
 
     if (mCurrentNumOfElements == mMaNumberOfElements)
     {
-        // currentAvg -= mData[currentIndex] / (double)mMaNumberOfElements;
         mCurrentSum -= mData[currentIndex];
-        mData[currentIndex] = (uint16_t)element; //this is safe because I cap it at 5000 max anyway
-        //currentAvg += mData[currentIndex] / (double)mMaNumberOfElements;
+        mData[currentIndex] = (double)element;
         mCurrentSum += mData[currentIndex];
     }
     else
     {
-        mData[currentIndex] = (uint16_t)element;
+        mData[currentIndex] = (double)element;
         mCurrentSum += mData[currentIndex];
         ++mCurrentNumOfElements;
-        //currentAvg = 0;
-        //for (int i = 0; i < mCurrentNumOfElements; i++)
-        //{
-        //    currentAvg += mData[i] / mCurrentNumOfElements;
-        //}
     }
 
-    mRunningAvg = (double)mCurrentSum / mCurrentNumOfElements;
+    mRunningAvg = mCurrentSum / mCurrentNumOfElements;
 
     if (currentIndex + 1 == mMaNumberOfElements)
         currentIndex = 0;
     else
         ++currentIndex;
 
-
-    //static unsigned int framesUntilPrint
-
-
-
-    if (element < 5)
+    if (element < 0.000001)
+        ++zeroFrames;
+    else if (element < 5)
         ++framesUnder5;
     else if (element >= 5 && element < 15)
         ++framesUnder15;
@@ -138,26 +126,23 @@ void FrameTimeRunningAvg::AddElement(__int64 element)
     else
         ++framesOver20;
 
-
     --framesUntilPrint;
     if (framesUntilPrint == 0)
     {
+        std::cout << "zeroframes: " << zeroFrames << std::endl;
         std::cout << "framesUnder5: " << framesUnder5 << std::endl;
         std::cout << "frames5to15:  " << framesUnder15 << std::endl;
         std::cout << "frames15to20:  " << frames15to20 << std::endl;
         std::cout << "framesOver20:  " << framesOver20 << std::endl;
-
-        framesUntilPrint = 2500;
+        std::cout << "Average frame time (ms): " << mRunningAvg << std::endl;
+        std::cout << "FPS: " << 1000 / mRunningAvg << std::endl;
+        framesUntilPrint = 10000;
     }
-
-
-
 }
 
 double FrameTimeRunningAvg::GetRunningAvg() const
 {
     return mRunningAvg;
-    //return currentAvg;
 }
 
 
@@ -368,7 +353,6 @@ void Draw(
 
     // 1rst attribute buffer : vertices
 
-
     glEnableVertexAttribArray(openGLm.mVertexInputHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
     glVertexAttribPointer(
@@ -401,33 +385,20 @@ void Draw(
     glUniform1i(openGLm.mTextureInputHandle, 0);
     //END FRAG
 
-
     // Draw the triangles !
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
-
-
 
     glDisableVertexAttribArray(openGLm.mVertexInputHandle);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); //clear the binding
-
-
 }
 
 void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
 {
-    // currentTime = timer.GetTime();
-
     Draw(rigidBody->mMVPForScene,
         meshInstance->GetVertBufferHandle(),
         meshInstance->GetUVBufferHandle(),
         meshInstance->GetTextureHandle());
-    //  if (framesUntilPrint == 1)
-    //  {
-    //      __int64 currentTime2 = timer.GetTime();
-    //      std::cout << "time of Draw sample: " << currentTime2 - currentTime << std::endl;
-
-    //  }
 }
 
 void SetupGameObject(GameObject& obj,
@@ -533,34 +504,45 @@ int main()
     bool endGameLoop = false;
     float timeDelta = 1;
     float avgDelta = 0;
-    RunningAvg ra(10);
+    FrameTimeRunningAvg frameTimeTracker(10);
 
-    __int64 previousTime = 0;
+    double previousTime = 0;
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
-    reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 0.001f;
+    reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 6.0f; //6 x units per second
 
-
+    //bool canFlipDir = true;
     while (!endGameLoop)
     {
 
-        if (reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x < -3 ||
-            reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mPositionWorldCoord.x > 3)
+        // LEFT OFF
+        //put frametime helper into its own file
+        //handle collisions, need to read up on that some - questions in UpdateSystem for RBMgr
+        //handle events
+
+        RigidBody* ballbody = reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent());
+        if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
         {
-            reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection.x *= -1;
+            ballbody->mDirection.x *= -1;
+            std::cout << "Hit! " << timer.GetTime() << std::endl;
         }
-
-        __int64 currentTime = timer.GetTime();
-
+        else if (ballbody->mPositionWorldCoord.x > 3 && ballbody->mDirection.x > 0)
+        {
+            ballbody->mDirection.x *= -1;
+            std::cout << "Hit! " << timer.GetTime() << std::endl;
+        }
 
         //rbm.DebugPrint();
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Update subsystems
-        ra.AddElement(currentTime - previousTime);
+        //Update time
+        double currentTime = timer.GetTime();
+        frameTimeTracker.AddElement(currentTime - previousTime);
         previousTime = currentTime;
-        UpdateSubsystems(ra.GetRunningAvg());
+        
+        //Update subsystems
+        UpdateSubsystems(frameTimeTracker.GetRunningAvg());
 
         void* ballMI = ball.GetMeshInstanceComponent();
         void* ballBR = ball.GetRigidBodyComponent();
