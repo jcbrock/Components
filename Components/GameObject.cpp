@@ -76,12 +76,12 @@ void GameObject::SetCComponent(void* ptr)
     SetComponent(ptr, 2);
 }
 
-void* GameObject::GetRigidBodyComponent()
+void* GameObject::GetRigidBodyComponent() const
 {
     return mComponents[0];
 }
 
-void* GameObject::GetMeshInstanceComponent()
+void* GameObject::GetMeshInstanceComponent() const
 {
     return mComponents[1];
 }

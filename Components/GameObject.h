@@ -24,8 +24,8 @@ public:
     void SetMeshInstanceComponent(void* ptr);
     void SetCComponent(void* ptr);
 
-    void* GetRigidBodyComponent();
-    void* GetMeshInstanceComponent();
+    void* GetRigidBodyComponent() const;
+    void* GetMeshInstanceComponent() const;
 
 private:
 

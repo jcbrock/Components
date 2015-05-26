@@ -71,6 +71,8 @@
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
+    <ClCompile Include="Data.cpp" />
+    <ClCompile Include="FrameTimeRunningAvg.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -88,6 +90,7 @@
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="ComponentManager.h" />
+    <ClInclude Include="FrameTimeRunningAvg.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MeshInstanceManager.h" />
