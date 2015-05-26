@@ -135,8 +135,13 @@ void RigidBodyManager::CleanupDeletions()
     }
 }
 
-void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
+void RigidBodyManager::UpdateSubsystem(double timeDelta)
 {
+    if (timeDelta == 0)
+    {
+        int breakme = 0;
+        breakme = breakme;
+    }
     RigidBody* data = reinterpret_cast <RigidBody*>(mRigidBodyArray);
 
     for (size_t i = 0; i < mMaxSize; ++i)
@@ -153,8 +158,21 @@ void RigidBodyManager::UpdateSubsystem(size_t timeDelta)
             }
             else
             {
-                data->mPositionWorldCoord.x += data->mDirection.x * data->mSpeed * timeDelta;
-                data->mPositionWorldCoord.y += data->mDirection.y * data->mSpeed * timeDelta;
+                //ok, how to handle collisions...
+                //AABB
+                //meh, might as well cheat and only check ball for collision
+                //then again, this function is agnostic to what rigidbody it is updating.
+                //maybe if I detect a collision, I generate an event for those objects
+                //to handle later?
+
+                //collisions result in a change in direction (at least for now)
+                //how do I not detect a collision twice tho?
+
+                //speed in x units per sec
+                //timeDelta in ms
+                //distance to move is speed / 1000 * timedelta
+                data->mPositionWorldCoord.x += data->mDirection.x * (data->mSpeed / 1000) * timeDelta;
+                data->mPositionWorldCoord.y += data->mDirection.y * (data->mSpeed / 1000) * timeDelta;
             }
         }
 

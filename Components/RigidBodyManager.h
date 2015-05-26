@@ -12,7 +12,7 @@ class RigidBodyManager //inherit?
 
 public:
     void Initialize(unsigned long maxSize);
-    void UpdateSubsystem(size_t timeDelta); //inherit?
+    void UpdateSubsystem(double timeDelta); //inherit?
     RigidBody* CreateRigidBody(); //returns a handle to RigidBody
     
     void CleanupDeletions();
