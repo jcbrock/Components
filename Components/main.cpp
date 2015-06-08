@@ -16,16 +16,12 @@
 #include <thread>
 #include <chrono>
 
-<<<<<<< HEAD
 //Event stuff
 #include "EventSystem\Event.h"
 #include "EventSystem\EventData.h"
 #include "EventSystem\EventEnums.h"
 
 // for page size
-=======
-// for page size / vsync stuff
->>>>>>> 47811447fe7a6256f5c8f26ae02cb3dc6a941559
 #include <windows.h>
 
 // vsync stuff
@@ -209,16 +205,12 @@ int main()
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-<<<<<<< HEAD
         // Handle Events
         for (Event* evt : eventQueue)
         {
-            HandleEvent(evt);
+            HandleEvent(*evt);
         }
 
-        // Update subsystems
-        UpdateSubsystems(timeDelta);
-=======
         //Update time
         double currentTime = gTimer.GetTime();
         frameTimeTracker.AddElement(currentTime - previousTime);
@@ -226,7 +218,6 @@ int main()
         
         //Update subsystems
         UpdateSubsystems(frameTimeTracker.GetRunningAvg());
->>>>>>> 47811447fe7a6256f5c8f26ae02cb3dc6a941559
 
         Draw(ball);
         Draw(leftPaddle);
