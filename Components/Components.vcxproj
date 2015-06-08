@@ -71,6 +71,8 @@
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
+    <ClCompile Include="EventSystem\Event.cpp" />
+    <ClCompile Include="EventSystem\EventData.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -87,6 +89,9 @@
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="ComponentManager.h" />
+    <ClInclude Include="EventSystem\Event.h" />
+    <ClInclude Include="EventSystem\EventData.h" />
+    <ClInclude Include="EventSystem\EventEnums.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MeshInstanceManager.h" />

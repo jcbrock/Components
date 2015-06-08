@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+
 #include "GameObject.h"
 
 #include "ObjectModel\MeshInstance.h"
@@ -10,6 +12,11 @@
 
 #include <thread>
 #include <chrono>
+
+//Event stuff
+#include "EventSystem\Event.h"
+#include "EventSystem\EventData.h"
+#include "EventSystem\EventEnums.h"
 
 // for page size
 #include <windows.h>
@@ -297,6 +304,19 @@ void SetupGameObject(GameObject& obj,
     obj.SetMeshInstanceComponent(objMI);
 }
 
+std::vector<Event*> eventQueue;
+void HandleEvent(const Event& evt)
+{
+    switch (evt.type)
+    {
+    case EventType::UP_ARROW_PRESSED:
+        CollisionData* data = dynamic_cast<CollisionData*>(evt.data);
+        reinterpret_cast<RigidBody*>(data->obj2->GetRigidBodyComponent())->mDirection *= -1;
+        break;
+        //default:
+    }
+}
+
 int main()
 {
     // INIT SUBSYSTEMS - OpenGL, RigidyBodyManager, MeshInstanceManager
@@ -324,6 +344,18 @@ int main()
     //mim.DestroyMeshInstance(0);
     //mim.DebugPrint();
 
+    //TODO - map keyboard input to events
+    //Temp
+    Event dummyEvt;
+    dummyEvt.type = EventType::UP_ARROW_PRESSED;
+    CollisionData data;
+    data.priority = EventPriority::IMMEDIATE;
+    data.obj1 = &leftPaddle;
+    data.obj2 = &ball;
+    dummyEvt.data = dynamic_cast<EventData*>(&data);
+    eventQueue.push_back(&dummyEvt);
+
+
     // ALL SETUP - ENTER LOOP
 
     bool endGameLoop = false;
@@ -340,7 +372,13 @@ int main()
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Update subsystems
+        // Handle Events
+        for (Event* evt : eventQueue)
+        {
+            HandleEvent(evt);
+        }
+
+        // Update subsystems
         UpdateSubsystems(timeDelta);
 
         // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?

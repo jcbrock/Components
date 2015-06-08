@@ -22,6 +22,9 @@
     <Filter Include="ObjectModel">
       <UniqueIdentifier>{018c3dee-d176-470b-b1e1-b8369e791b6f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="EventSystem">
+      <UniqueIdentifier>{5a2ef5f2-16a7-4473-85f4-e139e283979b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -66,6 +69,12 @@
     <ClCompile Include="Buffer.cpp">
       <Filter>OpenGLWrapper</Filter>
     </ClCompile>
+    <ClCompile Include="EventSystem\Event.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="EventSystem\EventData.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -100,6 +109,15 @@
     </ClInclude>
     <ClInclude Include="Buffer.h">
       <Filter>OpenGLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem\Event.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem\EventData.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem\EventEnums.h">
+      <Filter>EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
