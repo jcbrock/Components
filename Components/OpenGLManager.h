@@ -2,7 +2,7 @@
 #define OPEN_GL_MANAGER_H
 
 #include <GL/glew.h>
-#include <glm/glm.hpp> //for glm::mat4& mvp,
+#include <glm/glm.hpp> //for glm::mat4& mvp, see if I can get rid of this include
 
 class OpenGLManager
 {
