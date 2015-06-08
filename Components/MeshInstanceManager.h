@@ -8,7 +8,7 @@ class MeshInstanceManager //inherit?
 
 public:
     void Initialize(unsigned long maxSize);
-    void UpdateSubsystem(float timeDelta); //inherit?
+    void UpdateSubsystem(double timeDelta); //inherit?
     MeshInstance* CreateMeshInstance(); //returns a handle to MeshInstance
     
     void MarkMeshInstanceForDelete(int index);

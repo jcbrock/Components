@@ -10,30 +10,52 @@
 #include "MeshInstanceManager.h"
 #include "OpenGLManager.h"
 
+#include "Timer.h"
+#include "FrameTimeRunningAvg.h"
+
 #include <thread>
 #include <chrono>
 
+<<<<<<< HEAD
 //Event stuff
 #include "EventSystem\Event.h"
 #include "EventSystem\EventData.h"
 #include "EventSystem\EventEnums.h"
 
 // for page size
+=======
+// for page size / vsync stuff
+>>>>>>> 47811447fe7a6256f5c8f26ae02cb3dc6a941559
 #include <windows.h>
+
+// vsync stuff
+#include <GL\wglew.h>
 
 #include <glfw3.h>
 
 //TODO - look at includes, think about dependencies
-extern GLFWwindow* window;
-RigidBodyManager rbm;
-MeshInstanceManager mim;
-OpenGLManager openGLm;
 
-void UpdateSubsystems(float timeDelta)
-{
-    rbm.UpdateSubsystem(timeDelta);
-    mim.UpdateSubsystem(timeDelta);
-}
+//	Each subsystem (i.e. RigidBodyManager) will control the memory
+//	management for all subsystem items (i.e. RigidBodies).
+//	Each manager contains an array of all objects of that type, so that when we
+//	update a subsystem, they all get updated. GameObjects will have pointers
+//	to their specific rigidbody.
+
+extern GLFWwindow* window;
+RigidBodyManager gRigidBodyMgr;
+MeshInstanceManager gMeshInstanceMgr;
+OpenGLManager gOpenGLMgr;
+Timer gTimer;
+
+// Data - put in data.cpp for organization
+extern GLfloat gLeftPaddleData[];
+extern GLfloat gRightPaddleData[];
+extern GLfloat gBallData[];
+extern GLfloat gUVBufferData[];
+extern size_t gLeftPaddleDataSize;
+extern size_t gRightPaddleDataSize;
+extern size_t gBallDataSize;
+extern size_t gUVBufferDataSize;
 
 bool InitializeSubsystems(DWORD memoryPageSize)
 {
@@ -41,245 +63,36 @@ bool InitializeSubsystems(DWORD memoryPageSize)
 
     bool ok = true;
 
-    ok = ok && openGLm.OpenGLInit();
-    rbm.Initialize(memoryPageSize);
-    mim.Initialize(memoryPageSize * 5);
+    ok = ok && gOpenGLMgr.OpenGLInit();
+    gRigidBodyMgr.Initialize(memoryPageSize);
+    gMeshInstanceMgr.Initialize(memoryPageSize * 5);
+    gTimer.Initialize();
 
     return ok;
 }
 
-//Notes - todo, put somewhere else
-//Memory management
-//	Each subsystem (i.e. RigidBodyManager) will control the memory
-//	management for all subsystem items (i.e. RigidBodies). Right now
-//	I think each manager contains an array of the things, so that when we
-//	update a subsystem, they all get updated. GameObjects will have pointers
-//	to their specific rigidbody.
-
-#pragma region Data
-GLfloat leftPaddleData[] = {
-    -3.0f, -1.0f, -1.0f,
-    -3.0f, -1.0f, 1.0f,
-    -3.0f, 1.0f, 1.0f,
-    -2.5f, 1.0f, -1.0f,
-    -3.0f, -1.0f, -1.0f,
-    -3.0f, 1.0f, -1.0f,
-    -2.5f, -1.0f, 1.0f,
-    -3.0f, -1.0f, -1.0f,
-    -2.5f, -1.0f, -1.0f,
-    -2.5f, 1.0f, -1.0f,
-    -2.5f, -1.0f, -1.0f,
-    -3.0f, -1.0f, -1.0f,
-    -3.0f, -1.0f, -1.0f,
-    -3.0f, 1.0f, 1.0f,
-    -3.0f, 1.0f, -1.0f,
-    -2.5f, -1.0f, 1.0f,
-    -3.0f, -1.0f, 1.0f,
-    -3.0f, -1.0f, -1.0f,
-    -3.0f, 1.0f, 1.0f,
-    -3.0f, -1.0f, 1.0f,
-    -2.5f, -1.0f, 1.0f,
-    -2.5f, 1.0f, 1.0f,
-    -2.5f, -1.0f, -1.0f,
-    -2.5f, 1.0f, -1.0f,
-    -2.5f, -1.0f, -1.0f,
-    -2.5f, 1.0f, 1.0f,
-    -2.5f, -1.0f, 1.0f,
-    -2.5f, 1.0f, 1.0f,
-    -2.5f, 1.0f, -1.0f,
-    -3.0f, 1.0f, -1.0f,
-    -2.5f, 1.0f, 1.0f,
-    -3.0f, 1.0f, -1.0f,
-    -3.0f, 1.0f, 1.0f,
-    -2.5f, 1.0f, 1.0f,
-    -3.0f, 1.0f, 1.0f,
-    -2.5f, -1.0f, 1.0f
-};
-GLfloat rightPaddleData[] = {
-    4.5f, -1.0f, -1.0f,
-    4.5f, -1.0f, 1.0f,
-    4.5f, 1.0f, 1.0f,
-    5.0f, 1.0f, -1.0f,
-    4.5f, -1.0f, -1.0f,
-    4.5f, 1.0f, -1.0f,
-    5.0f, -1.0f, 1.0f,
-    4.5f, -1.0f, -1.0f,
-    5.0f, -1.0f, -1.0f,
-    5.0f, 1.0f, -1.0f,
-    5.0f, -1.0f, -1.0f,
-    4.5f, -1.0f, -1.0f,
-    4.5f, -1.0f, -1.0f,
-    4.5f, 1.0f, 1.0f,
-    4.5f, 1.0f, -1.0f,
-    5.0f, -1.0f, 1.0f,
-    4.5f, -1.0f, 1.0f,
-    4.5f, -1.0f, -1.0f,
-    4.5f, 1.0f, 1.0f,
-    4.5f, -1.0f, 1.0f,
-    5.0f, -1.0f, 1.0f,
-    5.0f, 1.0f, 1.0f,
-    5.0f, -1.0f, -1.0f,
-    5.0f, 1.0f, -1.0f,
-    5.0f, -1.0f, -1.0f,
-    5.0f, 1.0f, 1.0f,
-    5.0f, -1.0f, 1.0f,
-    5.0f, 1.0f, 1.0f,
-    5.0f, 1.0f, -1.0f,
-    4.5f, 1.0f, -1.0f,
-    5.0f, 1.0f, 1.0f,
-    4.5f, 1.0f, -1.0f,
-    4.5f, 1.0f, 1.0f,
-    5.0f, 1.0f, 1.0f,
-    4.5f, 1.0f, 1.0f,
-    5.0f, -1.0f, 1.0f
-};
-GLfloat ballData[] = {
-    1.5f, -0.5, -1.0f,
-    1.5f, -0.5f, 1.0f,
-    1.5f, 0.5f, 1.0f,
-    2.0f, 0.5f, -1.0f,
-    1.5f, -0.5f, -1.0f,
-    1.5f, 0.5f, -1.0f,
-    2.0f, -0.5f, 1.0f,
-    1.5f, -0.5f, -1.0f,
-    2.0f, -0.5f, -1.0f,
-    2.0f, 0.5f, -1.0f,
-    2.0f, -0.5f, -1.0f,
-    1.5f, -0.5f, -1.0f,
-    1.5f, -0.5f, -1.0f,
-    1.5f, 0.5f, 1.0f,
-    1.5f, 0.5f, -1.0f,
-    2.0f, -0.5f, 1.0f,
-    1.5f, -0.5f, 1.0f,
-    1.5f, -0.5f, -1.0f,
-    1.5f, 0.5f, 1.0f,
-    1.5f, -0.5f, 1.0f,
-    2.0f, -0.5f, 1.0f,
-    2.0f, 0.5f, 1.0f,
-    2.0f, -0.5f, -1.0f,
-    2.0f, 0.5f, -1.0f,
-    2.0f, -0.5f, -1.0f,
-    2.0f, 0.5f, 1.0f,
-    2.0f, -0.5f, 1.0f,
-    2.0f, 0.5f, 1.0f,
-    2.0f, 0.5f, -1.0f,
-    1.5f, 0.5f, -1.0f,
-    2.0f, 0.5f, 1.0f,
-    1.5f, 0.5f, -1.0f,
-    1.5f, 0.5f, 1.0f,
-    2.0f, 0.5f, 1.0f,
-    1.5f, 0.5f, 1.0f,
-    2.0f, -0.5f, 1.0f
-};
-// Two UV coordinatesfor each vertex. They were created withe Blender.
-GLfloat g_uv_buffer_data[] = {
-    0.000059f, 1.0f - 0.000004f,
-    0.000103f, 1.0f - 0.336048f,
-    0.335973f, 1.0f - 0.335903f,
-    1.000023f, 1.0f - 0.000013f,
-    0.667979f, 1.0f - 0.335851f,
-    0.999958f, 1.0f - 0.336064f,
-    0.667979f, 1.0f - 0.335851f,
-    0.336024f, 1.0f - 0.671877f,
-    0.667969f, 1.0f - 0.671889f,
-    1.000023f, 1.0f - 0.000013f,
-    0.668104f, 1.0f - 0.000013f,
-    0.667979f, 1.0f - 0.335851f,
-    0.000059f, 1.0f - 0.000004f,
-    0.335973f, 1.0f - 0.335903f,
-    0.336098f, 1.0f - 0.000071f,
-    0.667979f, 1.0f - 0.335851f,
-    0.335973f, 1.0f - 0.335903f,
-    0.336024f, 1.0f - 0.671877f,
-    1.000004f, 1.0f - 0.671847f,
-    0.999958f, 1.0f - 0.336064f,
-    0.667979f, 1.0f - 0.335851f,
-    0.668104f, 1.0f - 0.000013f,
-    0.335973f, 1.0f - 0.335903f,
-    0.667979f, 1.0f - 0.335851f,
-    0.335973f, 1.0f - 0.335903f,
-    0.668104f, 1.0f - 0.000013f,
-    0.336098f, 1.0f - 0.000071f,
-    0.000103f, 1.0f - 0.336048f,
-    0.000004f, 1.0f - 0.671870f,
-    0.336024f, 1.0f - 0.671877f,
-    0.000103f, 1.0f - 0.336048f,
-    0.336024f, 1.0f - 0.671877f,
-    0.335973f, 1.0f - 0.335903f,
-    0.667969f, 1.0f - 0.671889f,
-    1.000004f, 1.0f - 0.671847f,
-    0.667979f, 1.0f - 0.335851f
-};
-#pragma endregion
-
-
-void Draw(
-    const glm::mat4& mvp,
-    const GLuint& vertexBufferHandle,
-    const GLuint&  uvBufferHandle,
-    const GLuint& textureDataHandle)
+void UpdateSubsystems(double timeDelta)
 {
-    //constants - handles to shader inputs
-
-    //mixed - buffer data - data is constant, I just need to do a lookup per shape for the right buffer
-
-    //SETUP VERTEX SHADER INPUTS
-
-
-    // Send our transformation to the currently bound shader, 
-    // in the "MVP" uniform
-
-    glUniformMatrix4fv(openGLm.mMVPMatrixInputHandle, 1, GL_FALSE, &mvp[0][0]);
-
-    // 1rst attribute buffer : vertices
-
-
-    glEnableVertexAttribArray(openGLm.mVertexInputHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
-    glVertexAttribPointer(
-        openGLm.mVertexInputHandle,           // The attribute we want to configure
-        3,                            // size
-        GL_FLOAT,                     // type
-        GL_FALSE,                     // normalized?
-        0,                            // stride
-        (void*)0                      // array buffer offset
-        );
-
-    // 2nd attribute buffer : UVs
-    glEnableVertexAttribArray(openGLm.mUVCoordinateInputHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBufferHandle);
-    glVertexAttribPointer(
-        openGLm.mUVCoordinateInputHandle,                   // The attribute we want to configure
-        2,                            // size : U+V => 2
-        GL_FLOAT,                     // type
-        GL_FALSE,                     // normalized?
-        0,                            // stride
-        (void*)0                      // array buffer offset
-        );
-
-    //SETUP FRAGMENT SHADER INPUTS
-    // Bind our texture in Texture Unit 0
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureDataHandle);
-    // Set our "myTextureSampler" sampler to user Texture Unit 0
-    glUniform1i(openGLm.mTextureInputHandle, 0);
-    //END FRAG
-
-
-    // Draw the triangles !
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
-
-    glDisableVertexAttribArray(openGLm.mVertexInputHandle);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0); //clear the binding
+    gRigidBodyMgr.UpdateSubsystem(timeDelta);
+    gMeshInstanceMgr.UpdateSubsystem(timeDelta);
 }
 
-void Draw(MeshInstance* meshInstance, RigidBody* rigidBody)
+void Draw(const GameObject& obj)
 {
-    Draw(rigidBody->mMVPForScene,
-        meshInstance->GetVertBufferHandle(),
-        meshInstance->GetUVBufferHandle(),
-        meshInstance->GetTextureHandle());
+    MeshInstance* mi = reinterpret_cast<MeshInstance*>(obj.GetMeshInstanceComponent());
+    RigidBody* rb = reinterpret_cast<RigidBody*>(obj.GetRigidBodyComponent());
+
+    if (mi && rb)
+    {
+        gOpenGLMgr.Draw(rb->mMVPForScene,
+            mi->GetVertBufferHandle(),
+            mi->GetUVBufferHandle(),
+            mi->GetTextureHandle());
+    }
+    else
+    {
+        // Log unable to draw obj message
+    }
 }
 
 void SetupGameObject(GameObject& obj,
@@ -289,15 +102,15 @@ void SetupGameObject(GameObject& obj,
     GLfloat* uvData,
     GLuint textureHandle)
 {
-    // SETUP RIGID BODIES
+    // Setup rigid body
 
-    RigidBody* objRB = rbm.CreateRigidBody();
+    RigidBody* objRB = gRigidBodyMgr.CreateRigidBody();
     objRB->mName = obj.GetName() + "RB";
     obj.SetRigidBodyComponent(objRB);
 
-    // MESH INSTANCE
+    // Setup mesh instance
 
-    MeshInstance* objMI = mim.CreateMeshInstance();
+    MeshInstance* objMI = gMeshInstanceMgr.CreateMeshInstance();
     objMI->SetName(obj.GetName() + "MI");
     objMI->SetTexture(uvDataSize, uvData, textureHandle);
     objMI->SetVertexData(vertDataSize, vertData);
@@ -326,21 +139,32 @@ int main()
 
     InitializeSubsystems(si.dwPageSize);
 
+    //note this has to be done after openGL context is initialized. move this to somewhere better
+#ifdef _WIN32
+    // Turn off vertical screen sync under Windows.
+    // (I.e. it uses the WGL_EXT_swap_control extension)
+    typedef BOOL(WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+    PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    if (wglSwapIntervalEXT)
+        wglSwapIntervalEXT(0);
+#endif
+
     // SETUP GAME OBJECTS
 
     GameObject leftPaddle("LeftPaddle");
     GameObject rightPaddle("RightPaddle");
     GameObject ball("Ball");
 
-    SetupGameObject(leftPaddle, sizeof(leftPaddleData), leftPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
-    SetupGameObject(rightPaddle, sizeof(rightPaddleData), rightPaddleData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
-    SetupGameObject(ball, sizeof(ballData), ballData, sizeof(g_uv_buffer_data), g_uv_buffer_data, openGLm.mTexture);
+    SetupGameObject(leftPaddle, gLeftPaddleDataSize, gLeftPaddleData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
+    SetupGameObject(rightPaddle, gRightPaddleDataSize, gRightPaddleData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
+    SetupGameObject(ball, gBallDataSize, gBallData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
 
     leftPaddle.DebugPrint();
     rightPaddle.DebugPrint();
     ball.DebugPrint();
-    rbm.DebugPrint();
-    mim.DebugPrint();
+    gRigidBodyMgr.DebugPrint();
+    gMeshInstanceMgr.DebugPrint();
     //mim.DestroyMeshInstance(0);
     //mim.DebugPrint();
 
@@ -359,19 +183,33 @@ int main()
     // ALL SETUP - ENTER LOOP
 
     bool endGameLoop = false;
-    float timeDelta = 1;
+    FrameTimeRunningAvg frameTimeTracker(10);
+    double previousTime = 0;
+
     reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mDirection = glm::vec4(-1, 0, 0, 0);
+    reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent())->mSpeed = 6.0f; //6 x units per second
+
     while (!endGameLoop)
     {
+        // Placeholder code for detecting collision and reversing ball speed
+        RigidBody* ballbody = reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent());
+        if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
+        {
+            ballbody->mDirection.x *= -1;
+            std::cout << "Hit! " << gTimer.GetTime() << std::endl;
+        }
+        else if (ballbody->mPositionWorldCoord.x > 3 && ballbody->mDirection.x > 0)
+        {
+            ballbody->mDirection.x *= -1;
+            std::cout << "Hit! " << gTimer.GetTime() << std::endl;
+        }
 
-        timeDelta += .1;
-        std::cout << "Timedelta: " << timeDelta << std::endl;
-        rbm.DebugPrint();
-
+        //rbm.DebugPrint();
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+<<<<<<< HEAD
         // Handle Events
         for (Event* evt : eventQueue)
         {
@@ -380,17 +218,23 @@ int main()
 
         // Update subsystems
         UpdateSubsystems(timeDelta);
+=======
+        //Update time
+        double currentTime = gTimer.GetTime();
+        frameTimeTracker.AddElement(currentTime - previousTime);
+        previousTime = currentTime;
+        
+        //Update subsystems
+        UpdateSubsystems(frameTimeTracker.GetRunningAvg());
+>>>>>>> 47811447fe7a6256f5c8f26ae02cb3dc6a941559
 
-        // How do I handle drawing? Is that part updating MeshInstance Subysystem? or is that responsbility just compute MVPs?
-        Draw(reinterpret_cast<MeshInstance*>(ball.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent()));
-        Draw(reinterpret_cast<MeshInstance*>(leftPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(leftPaddle.GetRigidBodyComponent()));
-        Draw(reinterpret_cast<MeshInstance*>(rightPaddle.GetMeshInstanceComponent()), reinterpret_cast<RigidBody*>(rightPaddle.GetRigidBodyComponent()));
+        Draw(ball);
+        Draw(leftPaddle);
+        Draw(rightPaddle);
 
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         //endGameLoop = true;
     }
