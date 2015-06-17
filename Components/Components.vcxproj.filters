@@ -25,6 +25,9 @@
     <Filter Include="EventSystem">
       <UniqueIdentifier>{5a2ef5f2-16a7-4473-85f4-e139e283979b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{511054b9-75c6-41a1-8227-eac079eca286}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +87,9 @@
     <ClCompile Include="FrameTimeRunningAvg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Input\KeyboardInput.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -133,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="FrameTimeRunningAvg.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\KeyboardInput.h">
+      <Filter>Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

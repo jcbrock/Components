@@ -23,5 +23,16 @@ public:
 
 };
 
+class MovePaddleData : public EventData
+{
+    //which objects are colliding
+    //ptrs? hmmm
+public:
+    GameObject* obj1;
+    float destX; //assuming this is a delta atm
+    float destY;
+
+};
+
 
 #endif

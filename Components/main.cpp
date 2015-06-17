@@ -16,6 +16,9 @@
 #include <thread>
 #include <chrono>
 
+//Input handling stuff
+#include "Input\KeyboardInput.h"
+
 //Event stuff
 #include "EventSystem\Event.h"
 #include "EventSystem\EventData.h"
@@ -114,16 +117,31 @@ void SetupGameObject(GameObject& obj,
 }
 
 std::vector<Event*> eventQueue;
-void HandleEvent(const Event& evt)
+void HandleEvent(const Event& evt, GameObject& temp)
 {
     switch (evt.type)
     {
     case EventType::UP_ARROW_PRESSED:
+    {
+
+  
         CollisionData* data = dynamic_cast<CollisionData*>(evt.data);
         reinterpret_cast<RigidBody*>(data->obj2->GetRigidBodyComponent())->mDirection *= -1;
         break;
+    }
+    case EventType::MOVE_PADDLE:
+    {
+
+  
+        MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.data);
+        data->obj1 = &temp;
+        reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.y += data->destY;
+        break;
+    }
         //default:
     }
+
+    //todo, remove event from queue
 }
 
 int main()
@@ -147,6 +165,10 @@ int main()
 #endif
 
     // SETUP GAME OBJECTS
+
+    //todo - have a singleton, or some sort of world query helper... otherwise I can only access these guys in this scope
+    // maybe I have some sort of ID system so I don't need to actually access the real objec,t but i have a feeling i'll need the 
+    // data so I can search it for certain critera...see what the book says
 
     GameObject leftPaddle("LeftPaddle");
     GameObject rightPaddle("RightPaddle");
@@ -175,6 +197,18 @@ int main()
     dummyEvt.data = dynamic_cast<EventData*>(&data);
     eventQueue.push_back(&dummyEvt);
 
+    /*Event dummyEvt2;
+    dummyEvt2.type = EventType::MOVE_PADDLE;
+    MovePaddleData mvData;
+    mvData.priority = EventPriority::IMMEDIATE;
+    mvData.obj1 = &leftPaddle;
+    mvData.destX = -3;
+    mvData.destY = 2;
+    dummyEvt2.data = dynamic_cast<EventData*>(&mvData);
+    eventQueue.push_back(&dummyEvt2);*/
+
+    KeyboardInput ki;
+    
 
     // ALL SETUP - ENTER LOOP
 
@@ -187,6 +221,8 @@ int main()
 
     while (!endGameLoop)
     {
+        ki.Loop(window);
+
         // Placeholder code for detecting collision and reversing ball speed
         RigidBody* ballbody = reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent());
         if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
@@ -208,7 +244,7 @@ int main()
         // Handle Events
         for (Event* evt : eventQueue)
         {
-            HandleEvent(*evt);
+            HandleEvent(*evt, leftPaddle);
         }
 
         //Update time
