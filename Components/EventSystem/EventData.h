@@ -8,7 +8,6 @@ class GameObject;
 class EventData
 {
 public:
-    EventPriority priority;
     //EventData();
     virtual ~EventData(){};
 };

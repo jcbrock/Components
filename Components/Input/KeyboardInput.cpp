@@ -6,8 +6,10 @@
 #include <memory>
 #include "../EventSystem/EventData.h"
 #include "../EventSystem/Event.h"
+#include "Handle.h"
+#include "../EventSystem/EventQueue.h"
 
-extern std::vector<Event*> eventQueue;
+extern EventQueue eventQueue;
 KeyboardInput::KeyboardInput()
 {
    /* AddKeyEvent("WPressed", GLFW_KEY_W, GLFW_PRESS);
@@ -68,6 +70,10 @@ void KeyboardInput::NotifyObservers(int key, int action) const
     }
 }
 */
+
+
+extern std::unordered_map<PongGameHandle, GameObject*> gWorldObjects;
+
 void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
 {
     if (!previousKeyValues[key] && glfwGetKey(window, key) == GLFW_PRESS)
@@ -78,15 +84,58 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
         if (key == GLFW_KEY_W)
         {
             Event* dummyEvt2 = new Event();
+            dummyEvt2->priority = EventPriority::MEDIUM;
+            dummyEvt2->frameToExecute = 0;
             dummyEvt2->type = EventType::MOVE_PADDLE;
             MovePaddleData* mvData = new MovePaddleData();
-            mvData->priority = EventPriority::IMMEDIATE;
-            // mvData.obj1 = &leftPaddle;
+            mvData->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
             //todo - hardcoding to left paddle
             mvData->destX = 0;
             mvData->destY = 0.1f;
             dummyEvt2->data = dynamic_cast<EventData*>(mvData);
-            eventQueue.push_back(dummyEvt2); //need this to get copied.........
+            //eventQueue.push_back(dummyEvt2); //need this to get copied.........
+            eventQueue.Enqueue(dummyEvt2);
+
+
+
+            Event* dummyEvt3 = new Event();
+            dummyEvt3->priority = EventPriority::HIGH;
+            dummyEvt3->frameToExecute = 0;
+            dummyEvt3->type = EventType::MOVE_PADDLE;
+            MovePaddleData* mvData2 = new MovePaddleData();
+            mvData2->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
+            //todo - hardcoding to left paddle
+            mvData2->destX = 0;
+            mvData2->destY = 0.1f;
+            dummyEvt3->data = dynamic_cast<EventData*>(mvData2);
+            //eventQueue.push_back(dummyEvt2); //need this to get copied.........
+            eventQueue.Enqueue(dummyEvt3);
+
+            Event* dummyEvt4 = new Event();
+            dummyEvt4->priority = EventPriority::MEDIUM;
+            dummyEvt4->frameToExecute = 0;
+            dummyEvt4->type = EventType::MOVE_PADDLE;
+            MovePaddleData* mvData3 = new MovePaddleData();
+            mvData3->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
+            //todo - hardcoding to left paddle
+            mvData3->destX = 0;
+            mvData3->destY = 0.1f;
+            dummyEvt4->data = dynamic_cast<EventData*>(mvData3);
+            //eventQueue.push_back(dummyEvt2); //need this to get copied.........
+            eventQueue.Enqueue(dummyEvt4);
+
+            Event* dummyEvt45 = new Event();
+            dummyEvt45->priority = EventPriority::HIGH;
+            dummyEvt45->frameToExecute = 0;
+            dummyEvt45->type = EventType::MOVE_PADDLE;
+            MovePaddleData* mvData4 = new MovePaddleData();
+            mvData4->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
+            //todo - hardcoding to left paddle
+            mvData4->destX = 0;
+            mvData4->destY = 0.1f;
+            dummyEvt45->data = dynamic_cast<EventData*>(mvData4);
+            //eventQueue.push_back(dummyEvt2); //need this to get copied.........
+            eventQueue.Enqueue(dummyEvt45);
         }
 
         //NotifyObservers(key, GLFW_PRESS);

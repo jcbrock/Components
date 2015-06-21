@@ -74,8 +74,10 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="EventSystem\Event.cpp" />
     <ClCompile Include="EventSystem\EventData.cpp" />
+    <ClCompile Include="EventSystem\EventQueue.cpp" />
     <ClCompile Include="FrameTimeRunningAvg.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Handle.cpp" />
     <ClCompile Include="Input\KeyboardInput.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -96,8 +98,10 @@
     <ClInclude Include="EventSystem\Event.h" />
     <ClInclude Include="EventSystem\EventData.h" />
     <ClInclude Include="EventSystem\EventEnums.h" />
+    <ClInclude Include="EventSystem\EventQueue.h" />
     <ClInclude Include="FrameTimeRunningAvg.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Handle.h" />
     <ClInclude Include="Input\KeyboardInput.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MeshInstanceManager.h" />

@@ -10,11 +10,14 @@ class Event// : public GameObject
 {
 public:
    // Item();
-   // ~Item() override;
+    ~Event();
 
    // void DebugPrint() const;
     EventType type;
     EventData* data;
+    EventPriority priority;
+    unsigned __int64 frameToExecute = 0;
+    bool HasBeenProcessed = false;
 };
 
 
