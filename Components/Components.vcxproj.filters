@@ -96,6 +96,9 @@
     <ClCompile Include="EventSystem\EventQueue.cpp">
       <Filter>EventSystem</Filter>
     </ClCompile>
+    <ClCompile Include="EventSystem\EventMemoryPoolManager.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -153,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventSystem\EventQueue.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem\EventMemoryPoolManager.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
   </ItemGroup>

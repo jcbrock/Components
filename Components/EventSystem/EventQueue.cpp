@@ -1,12 +1,16 @@
 #include "EventQueue.h"
 #include "Event.h"
+#include "EventMemoryPoolManager.h"
 
 #include <vector>
 #include <string>
+#include <iostream>
+
+extern EventMemoryPoolManager gEventMgr;
 
 EventQueue::EventQueue()
 {
-    std::memset(mEventQueue, 0, sizeof(Event*)* 10);
+    std::memset(mEventQueue, 0, sizeof(Event*)* MAX_QUEUE_SIZE);
 }
 
 void EventQueue::Enqueue(Event* evt)
@@ -14,7 +18,7 @@ void EventQueue::Enqueue(Event* evt)
     if (!evt)
         return;
 
-    if (mCurrentSize >= 10)
+    if (mCurrentSize >= MAX_QUEUE_SIZE)
     {
         return; //too big
     }
@@ -26,6 +30,21 @@ void EventQueue::Enqueue(Event* evt)
     InsertSortQueue();
 }
 
+void EventQueue::PrintDebugLog() const
+{
+    for (const std::string& message : mDebugEventQueue)
+    {
+        std::cout << message << std::endl;
+    }
+}
+
+void EventQueue::LogDebugMessage(const Event& evt)
+{
+    int index = static_cast<int>(evt.type);
+    mDebugEventQueue.push_back("Event: " + std::string(EventTypeEnumStrings[index]) + " Frame to execute: " + std::to_string(evt.frameToExecute));
+}
+
+
 Event* EventQueue::Dequeue()
 {
     Event* evt = nullptr;
@@ -34,13 +53,20 @@ Event* EventQueue::Dequeue()
     {
         evt = mEventQueue[mNextUnprocessedEventIndex];
         ++mNextUnprocessedEventIndex;
-        //evt->HasBeenProcessed = true;
-        int index = static_cast<int>(evt->type);
-        mDebugEventQueue.push_back("Event: " + std::string(EventTypeEnumStrings[index]) + " Frame to execute: " + std::to_string(evt->frameToExecute));
+        LogDebugMessage(*evt);
     }
-    else
+
+    return evt; //TODO - make sure pointers get cleaned up....
+}
+
+const Event* EventQueue::Peek()
+{
+    Event* evt = nullptr;
+
+    if (mCurrentSize > mNextUnprocessedEventIndex)
     {
-        mDebugEventQueue.push_back("Process called on empty event queue");
+        evt = mEventQueue[mNextUnprocessedEventIndex];
+        LogDebugMessage(*evt);
     }
 
     return evt; //TODO - make sure pointers get cleaned up....
@@ -121,7 +147,8 @@ void EventQueue::ClearProcessedEvents()
         {
             break;
         }
-        delete mEventQueue[i];
+        gEventMgr.DestroyEvent(mEventQueue[i]);
+        //delete mEventQueue[i];
         ++shiftAmt;
     }
 

@@ -1,6 +1,7 @@
 #include "RigidBodyManager.h"
 #include "ObjectModel\RigidBody.h"
 #include <math.h>
+#include <new> // needed for placement new
 
 void RigidBodyManager::DebugPrint()
 {

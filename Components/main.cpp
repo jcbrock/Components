@@ -25,6 +25,7 @@
 #include "EventSystem\EventData.h"
 #include "EventSystem\EventEnums.h"
 #include "EventSystem\EventQueue.h"
+#include "EventSystem\EventMemoryPoolManager.h"
 
 // for page size
 #include <windows.h>
@@ -45,6 +46,7 @@
 extern GLFWwindow* window;
 RigidBodyManager gRigidBodyMgr;
 MeshInstanceManager gMeshInstanceMgr;
+EventMemoryPoolManager gEventMgr;
 OpenGLManager gOpenGLMgr;
 Timer gTimer;
 
@@ -65,6 +67,7 @@ bool InitializeSubsystems(DWORD memoryPageSize)
     bool ok = true;
 
     ok = ok && gOpenGLMgr.OpenGLInit();
+    gEventMgr.Initialize(memoryPageSize);
     gRigidBodyMgr.Initialize(memoryPageSize);
     gMeshInstanceMgr.Initialize(memoryPageSize * 5);
     gTimer.Initialize();
@@ -204,7 +207,8 @@ int main()
 
     //TODO - map keyboard input to events
     //Temp
-    Event* dummyEvt = new Event();
+    //Event* dummyEvt = new Event();
+    Event* dummyEvt = gEventMgr.CreateEvent2();
     dummyEvt->type = EventType::UP_ARROW_PRESSED;
     dummyEvt->priority = EventPriority::LOW;
     dummyEvt->frameToExecute = 0;
@@ -265,15 +269,20 @@ int main()
         int numOfEventsToProcessThisFrame = 3;
         for (int i = 0; i < numOfEventsToProcessThisFrame; ++i)
         {
+            const Event* peek = eventQueue.Peek();
+            if (peek)
+            {
+                std::cout << "About to process " << std::string(EventTypeEnumStrings[static_cast<int>(peek->type)]) << std::endl;
+            }
+
             Event* evt = eventQueue.Dequeue();
 
             if (evt)
             {
                 HandleEvent(*evt);
             }
-           
-            //I guess this is where I will clean it up?
         }
+        gEventMgr.DebugPrint();
         eventQueue.ClearProcessedEvents();
 
         

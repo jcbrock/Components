@@ -26,4 +26,11 @@ enum class EventPriority : int
     HIGH,
 };
 
+// For debugging
+static const char * EventPriorityEnumStrings[] = {
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+};
+
 #endif

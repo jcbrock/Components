@@ -11,23 +11,34 @@ class EventQueue
 {
 public:
     EventQueue();
-    //~EventQueue(){};
 
-    // Will add and sort into the right spot
-    void Enqueue(Event* evt); // gotta duplicate, or can I pillage?
+    // Adds event to the queue and sorts it to the right position based on FrameToExcute and Priority
+    void Enqueue(Event* evt);
+
+    // Gets the next event to be processed
     Event* Dequeue();
 
-    bool IsEmpty() const { mCurrentSize == 0; };
+    // Gets the next event to be processed, but does not assume it has been pulled out of the array for processing
+    const Event* Peek();
+
+    // Iterates through the queue and cleans up processed events
     void ClearProcessedEvents();
-    //Event* GetEvent(int index) const { return mEventQueue[index]; };
-    
+
+    bool IsEmpty() const { return mCurrentSize == 0; };
    
 private:
     void InsertSortQueue();
+    void LogDebugMessage(const Event& evt);
+    void PrintDebugLog() const;
 private:
+    static const unsigned short MAX_QUEUE_SIZE = 10;
     int mNextUnprocessedEventIndex = 0;
     int mCurrentSize = 0;
-    Event* mEventQueue[10];
+
+    // Creation of these pointers is not the responsibility of the EventQueue 
+    // (someday they'll come from a memory pool for events), but deletion happens in ClearProcessedEvents
+    Event* mEventQueue[MAX_QUEUE_SIZE];
+
     std::vector<std::string> mDebugEventQueue;
 };
 

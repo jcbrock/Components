@@ -9,10 +9,10 @@ class EventData;
 class Event// : public GameObject
 {
 public:
-   // Item();
+    Event(){};
     ~Event();
 
-   // void DebugPrint() const;
+    void DebugPrint() const;
     EventType type;
     EventData* data;
     EventPriority priority;

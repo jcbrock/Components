@@ -74,6 +74,7 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="EventSystem\Event.cpp" />
     <ClCompile Include="EventSystem\EventData.cpp" />
+    <ClCompile Include="EventSystem\EventMemoryPoolManager.cpp" />
     <ClCompile Include="EventSystem\EventQueue.cpp" />
     <ClCompile Include="FrameTimeRunningAvg.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -98,6 +99,7 @@
     <ClInclude Include="EventSystem\Event.h" />
     <ClInclude Include="EventSystem\EventData.h" />
     <ClInclude Include="EventSystem\EventEnums.h" />
+    <ClInclude Include="EventSystem\EventMemoryPoolManager.h" />
     <ClInclude Include="EventSystem\EventQueue.h" />
     <ClInclude Include="FrameTimeRunningAvg.h" />
     <ClInclude Include="GameObject.h" />

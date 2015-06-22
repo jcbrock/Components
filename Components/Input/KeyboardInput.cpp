@@ -8,8 +8,11 @@
 #include "../EventSystem/Event.h"
 #include "Handle.h"
 #include "../EventSystem/EventQueue.h"
+#include "../EventSystem/EventMemoryPoolManager.h"
 
 extern EventQueue eventQueue;
+extern EventMemoryPoolManager gEventMgr;
+
 KeyboardInput::KeyboardInput()
 {
    /* AddKeyEvent("WPressed", GLFW_KEY_W, GLFW_PRESS);
@@ -83,7 +86,9 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
 
         if (key == GLFW_KEY_W)
         {
-            Event* dummyEvt2 = new Event();
+            Event* dummyEvt2 = gEventMgr.CreateEvent2();
+
+            //Event* dummyEvt2 = new Event();
             dummyEvt2->priority = EventPriority::MEDIUM;
             dummyEvt2->frameToExecute = 0;
             dummyEvt2->type = EventType::MOVE_PADDLE;
@@ -96,9 +101,9 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
             //eventQueue.push_back(dummyEvt2); //need this to get copied.........
             eventQueue.Enqueue(dummyEvt2);
 
+            
 
-
-            Event* dummyEvt3 = new Event();
+            Event* dummyEvt3 = gEventMgr.CreateEvent2();
             dummyEvt3->priority = EventPriority::HIGH;
             dummyEvt3->frameToExecute = 0;
             dummyEvt3->type = EventType::MOVE_PADDLE;
@@ -111,7 +116,7 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
             //eventQueue.push_back(dummyEvt2); //need this to get copied.........
             eventQueue.Enqueue(dummyEvt3);
 
-            Event* dummyEvt4 = new Event();
+            Event* dummyEvt4 = gEventMgr.CreateEvent2();
             dummyEvt4->priority = EventPriority::MEDIUM;
             dummyEvt4->frameToExecute = 0;
             dummyEvt4->type = EventType::MOVE_PADDLE;
@@ -124,7 +129,7 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
             //eventQueue.push_back(dummyEvt2); //need this to get copied.........
             eventQueue.Enqueue(dummyEvt4);
 
-            Event* dummyEvt45 = new Event();
+            Event* dummyEvt45 = gEventMgr.CreateEvent2();
             dummyEvt45->priority = EventPriority::HIGH;
             dummyEvt45->frameToExecute = 0;
             dummyEvt45->type = EventType::MOVE_PADDLE;
@@ -136,6 +141,7 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
             dummyEvt45->data = dynamic_cast<EventData*>(mvData4);
             //eventQueue.push_back(dummyEvt2); //need this to get copied.........
             eventQueue.Enqueue(dummyEvt45);
+            
         }
 
         //NotifyObservers(key, GLFW_PRESS);
