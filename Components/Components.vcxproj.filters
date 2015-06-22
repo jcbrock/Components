@@ -161,6 +161,9 @@
     <ClInclude Include="EventSystem\EventMemoryPoolManager.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
+    <ClInclude Include="common\TypeDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="backup.txt" />

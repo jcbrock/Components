@@ -15,6 +15,7 @@
 
 #include <thread>
 #include <chrono>
+#include <stdint.h>
 
 //Input handling stuff
 #include "Input\KeyboardInput.h"
@@ -49,6 +50,8 @@ MeshInstanceManager gMeshInstanceMgr;
 EventMemoryPoolManager gEventMgr;
 OpenGLManager gOpenGLMgr;
 Timer gTimer;
+int32_t gFrameCount = 0;
+
 
 // Data - put in data.cpp for organization
 extern GLfloat gLeftPaddleData[];
@@ -124,13 +127,13 @@ void SetupGameObject(GameObject& obj,
 EventQueue eventQueue;
 void HandleEvent(Event& evt)
 {
-    switch (evt.type)
+    switch (evt.GetType())
     {
     case EventType::UP_ARROW_PRESSED:
     {
 
   
-        CollisionData* data = dynamic_cast<CollisionData*>(evt.data);
+        CollisionData* data = dynamic_cast<CollisionData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj2->GetRigidBodyComponent())->mDirection *= -1;
         break;
     }
@@ -143,16 +146,21 @@ void HandleEvent(Event& evt)
         //only way to improve is if I handled multiple of the same type of events at once...
         //maybe not a bad idea...? I'll save that for later - TODO
   
-        MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.data);
+                                   MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.x += data->destX;
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.y += data->destY;
         break;
+    }
+    case EventType::PRINT_DEBUG:
+    {
+                                   std::cout << "DEBUG PRINTING: " << std::endl;
+                                   gEventMgr.DebugPrint();
     }
         //default:
     }
 
     //todo, remove event from queue
-    evt.HasBeenProcessed = true;
+    evt.SetHasBeenProcessed(true);// = ;
 }
 
 std::unordered_map<PongGameHandle, GameObject*> gWorldObjects;
@@ -206,27 +214,12 @@ int main()
     //mim.DebugPrint();
 
     //TODO - map keyboard input to events
-    //Temp
-    //Event* dummyEvt = new Event();
-    Event* dummyEvt = gEventMgr.CreateEvent2();
-    dummyEvt->type = EventType::UP_ARROW_PRESSED;
-    dummyEvt->priority = EventPriority::LOW;
-    dummyEvt->frameToExecute = 0;
     CollisionData* data = new CollisionData();
     data->obj1 = &leftPaddle;
     data->obj2 = &ball;
-    dummyEvt->data = dynamic_cast<EventData*>(data);
+    Event* dummyEvt = gEventMgr.CreateEvent2();
+    dummyEvt->Initialize(EventType::UP_ARROW_PRESSED, data, EventPriority::LOW, 10000000);
     eventQueue.Enqueue(dummyEvt);
-
-    /*Event dummyEvt2;
-    dummyEvt2.type = EventType::MOVE_PADDLE;
-    MovePaddleData mvData;
-    mvData.priority = EventPriority::IMMEDIATE;
-    mvData.obj1 = &leftPaddle;
-    mvData.destX = -3;
-    mvData.destY = 2;
-    dummyEvt2.data = dynamic_cast<EventData*>(&mvData);
-    eventQueue.push_back(&dummyEvt2);*/
 
     KeyboardInput ki;
     
@@ -263,16 +256,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Handle Events
-        
-        //for some amt of time or till I have processed all I need to this frame
-        // for now - i processs some # of events
-        int numOfEventsToProcessThisFrame = 3;
-        for (int i = 0; i < numOfEventsToProcessThisFrame; ++i)
+
+        while (true)
         {
             const Event* peek = eventQueue.Peek();
-            if (peek)
+            if (peek && peek->GetFrameToExecute() <= gFrameCount)
             {
-                std::cout << "About to process " << std::string(EventTypeEnumStrings[static_cast<int>(peek->type)]) << std::endl;
+                std::cout << "About to process: " << std::endl;
+                peek->DebugPrint();
+            }
+            else
+            {
+                break;
             }
 
             Event* evt = eventQueue.Dequeue();
@@ -282,24 +277,8 @@ int main()
                 HandleEvent(*evt);
             }
         }
-        gEventMgr.DebugPrint();
+
         eventQueue.ClearProcessedEvents();
-
-        
-
-        //while (!eventQueue.IsEmpty())
-        //{
-        //    Event* evt = eventQueue.Dequeue();
-        //    HandleEvent(*evt);
-
-        //    delete evt;
-
-        //    //I guess this is where I will clean it up?
-        //}
-
-        // This might not be great memory locality because event pointers could be living all over the place
-        // might need some sort of allocator for events to keep them nearby
-       // eventQueue = std
 
         //Update time
         double currentTime = gTimer.GetTime();
@@ -318,6 +297,7 @@ int main()
         glfwPollEvents();
 
         //endGameLoop = true;
+        ++gFrameCount;
     }
 
     //TODO - RELEASE STUFF

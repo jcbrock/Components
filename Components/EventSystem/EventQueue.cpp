@@ -40,8 +40,8 @@ void EventQueue::PrintDebugLog() const
 
 void EventQueue::LogDebugMessage(const Event& evt)
 {
-    int index = static_cast<int>(evt.type);
-    mDebugEventQueue.push_back("Event: " + std::string(EventTypeEnumStrings[index]) + " Frame to execute: " + std::to_string(evt.frameToExecute));
+    int index = static_cast<int>(evt.GetType());
+    mDebugEventQueue.push_back("Event: " + std::string(EventTypeEnumStrings[index]) + " Frame to execute: " + std::to_string(evt.GetFrameToExecute()));
 }
 
 
@@ -95,8 +95,8 @@ void EventQueue::InsertSortQueue()
 
     
         bool foundSortedSpot = !next || 
-            current->frameToExecute > next->frameToExecute || 
-            (current->frameToExecute == next->frameToExecute && current->priority <= next->priority);
+            current->GetFrameToExecute() > next->GetFrameToExecute() ||
+            (current->GetFrameToExecute() == next->GetFrameToExecute() && current->GetPriority() <= next->GetPriority());
         
         if (foundSortedSpot)
         {
@@ -143,7 +143,7 @@ void EventQueue::ClearProcessedEvents()
 
     for (int i = 0; i < mCurrentSize; ++i)
     {
-        if (!mEventQueue[i]->HasBeenProcessed)
+        if (!mEventQueue[i]->GetHasBeenProcessed())
         {
             break;
         }

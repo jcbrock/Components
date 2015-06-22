@@ -95,6 +95,7 @@
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\texture.hpp" />
+    <ClInclude Include="common\TypeDefs.h" />
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="EventSystem\Event.h" />
     <ClInclude Include="EventSystem\EventData.h" />

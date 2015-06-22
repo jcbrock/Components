@@ -86,23 +86,18 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
 
         if (key == GLFW_KEY_W)
         {
-            Event* dummyEvt2 = gEventMgr.CreateEvent2();
-
-            //Event* dummyEvt2 = new Event();
-            dummyEvt2->priority = EventPriority::MEDIUM;
-            dummyEvt2->frameToExecute = 0;
-            dummyEvt2->type = EventType::MOVE_PADDLE;
             MovePaddleData* mvData = new MovePaddleData();
             mvData->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
             //todo - hardcoding to left paddle
             mvData->destX = 0;
             mvData->destY = 0.1f;
-            dummyEvt2->data = dynamic_cast<EventData*>(mvData);
-            //eventQueue.push_back(dummyEvt2); //need this to get copied.........
+
+            Event* dummyEvt2 = gEventMgr.CreateEvent2();
+            dummyEvt2->Initialize(EventType::MOVE_PADDLE, mvData, EventPriority::MEDIUM, 0);
             eventQueue.Enqueue(dummyEvt2);
 
             
-
+            /*
             Event* dummyEvt3 = gEventMgr.CreateEvent2();
             dummyEvt3->priority = EventPriority::HIGH;
             dummyEvt3->frameToExecute = 0;
@@ -140,8 +135,28 @@ void KeyboardInput::CheckKeyAction(GLFWwindow* window, int key)
             mvData4->destY = 0.1f;
             dummyEvt45->data = dynamic_cast<EventData*>(mvData4);
             //eventQueue.push_back(dummyEvt2); //need this to get copied.........
-            eventQueue.Enqueue(dummyEvt45);
+            eventQueue.Enqueue(dummyEvt45);*/
             
+        }
+        else if (key == GLFW_KEY_S)
+        {
+            //TODO - this is still loose memory - include within event memory pool
+            MovePaddleData* data = new MovePaddleData();
+            data->obj1 = gWorldObjects[PongGameHandle::LEFT_PADDLE];
+            data->destX = 0;
+            data->destY = -0.1f;
+
+            Event* evt = gEventMgr.CreateEvent2();
+            evt->Initialize(EventType::MOVE_PADDLE, data, EventPriority::MEDIUM, 0);
+            
+            eventQueue.Enqueue(evt);
+        }
+        else if (key == GLFW_KEY_D)
+        {
+            Event* evt = gEventMgr.CreateEvent2();
+            evt->Initialize(EventType::PRINT_DEBUG, nullptr, EventPriority::HIGH, 0);
+
+            eventQueue.Enqueue(evt);
         }
 
         //NotifyObservers(key, GLFW_PRESS);

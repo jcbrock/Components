@@ -8,6 +8,7 @@ enum class EventType : int
     DOWN_ARROW_PRESSED,
     DOWN_ARROW_RELEASED, //SHOULD THESE BE MORE GAME EVENTS?
     MOVE_PADDLE,
+    PRINT_DEBUG,
 };
 
 // For debugging
@@ -16,7 +17,8 @@ static const char * EventTypeEnumStrings[] = {
     "UP_ARROW_RELEASED", 
     "DOWN_ARROW_PRESSED",
     "DOWN_ARROW_RELEASED", 
-    "MOVE_PADDLE"
+    "MOVE_PADDLE",
+    "PRINT_DEBUG",
 };
 
 enum class EventPriority : int
