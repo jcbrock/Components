@@ -15,11 +15,18 @@
 
 #include <thread>
 #include <chrono>
+#include <stdint.h>
+
+//Input handling stuff
+#include "Input\KeyboardInput.h"
+#include "Handle.h"
 
 //Event stuff
 #include "EventSystem\Event.h"
 #include "EventSystem\EventData.h"
 #include "EventSystem\EventEnums.h"
+#include "EventSystem\EventQueue.h"
+#include "EventSystem\EventMemoryPoolManager.h"
 
 // for page size
 #include <windows.h>
@@ -40,8 +47,11 @@
 extern GLFWwindow* window;
 RigidBodyManager gRigidBodyMgr;
 MeshInstanceManager gMeshInstanceMgr;
+EventMemoryPoolManager gEventMgr;
 OpenGLManager gOpenGLMgr;
 Timer gTimer;
+int32_t gFrameCount = 0;
+
 
 // Data - put in data.cpp for organization
 extern GLfloat gLeftPaddleData[];
@@ -60,6 +70,7 @@ bool InitializeSubsystems(DWORD memoryPageSize)
     bool ok = true;
 
     ok = ok && gOpenGLMgr.OpenGLInit();
+    gEventMgr.Initialize(memoryPageSize);
     gRigidBodyMgr.Initialize(memoryPageSize);
     gMeshInstanceMgr.Initialize(memoryPageSize * 5);
     gTimer.Initialize();
@@ -113,18 +124,46 @@ void SetupGameObject(GameObject& obj,
     obj.SetMeshInstanceComponent(objMI);
 }
 
-std::vector<Event*> eventQueue;
-void HandleEvent(const Event& evt)
+EventQueue eventQueue;
+void HandleEvent(Event& evt)
 {
-    switch (evt.type)
+    switch (evt.GetType())
     {
     case EventType::UP_ARROW_PRESSED:
-        CollisionData* data = dynamic_cast<CollisionData*>(evt.data);
+    {
+
+  
+        CollisionData* data = dynamic_cast<CollisionData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj2->GetRigidBodyComponent())->mDirection *= -1;
         break;
+    }
+    case EventType::MOVE_PADDLE:
+    {
+        // so objects are gunna move regardless of if they got an event or not,
+        // THAT is what the update loop is about. It is fine if I move this here and it isn't
+        // a batched type thing...
+
+        //only way to improve is if I handled multiple of the same type of events at once...
+        //maybe not a bad idea...? I'll save that for later - TODO
+  
+                                   MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.GetData());
+        reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.x += data->destX;
+        reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.y += data->destY;
+        break;
+    }
+    case EventType::PRINT_DEBUG:
+    {
+                                   std::cout << "DEBUG PRINTING: " << std::endl;
+                                   gEventMgr.DebugPrint();
+    }
         //default:
     }
+
+    //todo, remove event from queue
+    evt.SetHasBeenProcessed(true);// = ;
 }
+
+std::unordered_map<PongGameHandle, GameObject*> gWorldObjects;
 
 int main()
 {
@@ -148,6 +187,12 @@ int main()
 
     // SETUP GAME OBJECTS
 
+    //todo - have a singleton, or some sort of world query helper... otherwise I can only access these guys in this scope
+    // maybe I have some sort of ID system so I don't need to actually access the real objec,t but i have a feeling i'll need the 
+    // data so I can search it for certain critera...see what the book says
+
+    // I'll have handles for my world objects - hard code the handles for now rather than doing a lookup
+
     GameObject leftPaddle("LeftPaddle");
     GameObject rightPaddle("RightPaddle");
     GameObject ball("Ball");
@@ -155,6 +200,10 @@ int main()
     SetupGameObject(leftPaddle, gLeftPaddleDataSize, gLeftPaddleData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
     SetupGameObject(rightPaddle, gRightPaddleDataSize, gRightPaddleData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
     SetupGameObject(ball, gBallDataSize, gBallData, gUVBufferDataSize, gUVBufferData, gOpenGLMgr.mTexture);
+
+    gWorldObjects.insert(std::make_pair<PongGameHandle, GameObject*>(PongGameHandle::LEFT_PADDLE, &leftPaddle));
+    gWorldObjects.insert(std::make_pair<PongGameHandle, GameObject*>(PongGameHandle::RIGHT_PADDLE, &rightPaddle));
+    gWorldObjects.insert(std::make_pair<PongGameHandle, GameObject*>(PongGameHandle::BALL, &ball));
 
     leftPaddle.DebugPrint();
     rightPaddle.DebugPrint();
@@ -165,16 +214,15 @@ int main()
     //mim.DebugPrint();
 
     //TODO - map keyboard input to events
-    //Temp
-    Event dummyEvt;
-    dummyEvt.type = EventType::UP_ARROW_PRESSED;
-    CollisionData data;
-    data.priority = EventPriority::IMMEDIATE;
-    data.obj1 = &leftPaddle;
-    data.obj2 = &ball;
-    dummyEvt.data = dynamic_cast<EventData*>(&data);
-    eventQueue.push_back(&dummyEvt);
+    CollisionData* data = new CollisionData();
+    data->obj1 = &leftPaddle;
+    data->obj2 = &ball;
+    Event* dummyEvt = gEventMgr.CreateEvent2();
+    dummyEvt->Initialize(EventType::UP_ARROW_PRESSED, data, EventPriority::LOW, 10000000);
+    eventQueue.Enqueue(dummyEvt);
 
+    KeyboardInput ki;
+    
 
     // ALL SETUP - ENTER LOOP
 
@@ -187,6 +235,8 @@ int main()
 
     while (!endGameLoop)
     {
+        ki.Loop(window);
+
         // Placeholder code for detecting collision and reversing ball speed
         RigidBody* ballbody = reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent());
         if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
@@ -206,10 +256,29 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Handle Events
-        for (Event* evt : eventQueue)
+
+        while (true)
         {
-            HandleEvent(*evt);
+            const Event* peek = eventQueue.Peek();
+            if (peek && peek->GetFrameToExecute() <= gFrameCount)
+            {
+                std::cout << "About to process: " << std::endl;
+                peek->DebugPrint();
+            }
+            else
+            {
+                break;
+            }
+
+            Event* evt = eventQueue.Dequeue();
+
+            if (evt)
+            {
+                HandleEvent(*evt);
+            }
         }
+
+        eventQueue.ClearProcessedEvents();
 
         //Update time
         double currentTime = gTimer.GetTime();
@@ -228,6 +297,7 @@ int main()
         glfwPollEvents();
 
         //endGameLoop = true;
+        ++gFrameCount;
     }
 
     //TODO - RELEASE STUFF
