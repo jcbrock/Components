@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 
+#include "common\LoggingDefines.h"
 #include "GameObject.h"
 
 #include "ObjectModel\MeshInstance.h"
@@ -242,12 +243,12 @@ int main()
         if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
         {
             ballbody->mDirection.x *= -1;
-            std::cout << "Hit! " << gTimer.GetTime() << std::endl;
+            LOG_SIMPLE("Hit! %f", gTimer.GetTime());
         }
         else if (ballbody->mPositionWorldCoord.x > 3 && ballbody->mDirection.x > 0)
         {
             ballbody->mDirection.x *= -1;
-            std::cout << "Hit! " << gTimer.GetTime() << std::endl;
+            LOG_SIMPLE("Hit! %f", gTimer.GetTime());
         }
 
         //rbm.DebugPrint();
@@ -262,7 +263,7 @@ int main()
             const Event* peek = eventQueue.Peek();
             if (peek && peek->GetFrameToExecute() <= gFrameCount)
             {
-                std::cout << "About to process: " << std::endl;
+                LOG_SIMPLE("About to process: ")
                 peek->DebugPrint();
             }
             else
