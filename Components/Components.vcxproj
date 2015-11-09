@@ -82,12 +82,11 @@
     <ClCompile Include="Input\KeyboardInput.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MeshInstanceManager.cpp" />
+    <ClCompile Include="ObjectModel\Component.cpp" />
     <ClCompile Include="ObjectModel\MeshInstance.cpp" />
     <ClCompile Include="ObjectModel\RigidBody.cpp" />
     <ClCompile Include="OpenGLManager.cpp" />
     <ClCompile Include="OpenGL\OpenGL.cpp" />
-    <ClCompile Include="RigidBodyManager.cpp" />
     <ClCompile Include="TestOpenGL.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
@@ -108,11 +107,10 @@
     <ClInclude Include="Handle.h" />
     <ClInclude Include="Input\KeyboardInput.h" />
     <ClInclude Include="Item.h" />
-    <ClInclude Include="MeshInstanceManager.h" />
+    <ClInclude Include="ObjectModel\Component.h" />
     <ClInclude Include="ObjectModel\MeshInstance.h" />
     <ClInclude Include="ObjectModel\RigidBody.h" />
     <ClInclude Include="OpenGLManager.h" />
-    <ClInclude Include="RigidBodyManager.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
