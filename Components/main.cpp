@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <thread>
 
 #include "common\LoggingDefines.h"
 #include "GameObject.h"
@@ -7,8 +8,7 @@
 #include "ObjectModel\MeshInstance.h"
 #include "ObjectModel\RigidBody.h"
 
-#include "RigidBodyManager.h"
-#include "MeshInstanceManager.h"
+#include "ComponentManager.h"
 #include "OpenGLManager.h"
 
 #include "Timer.h"
@@ -39,15 +39,15 @@
 
 //TODO - look at includes, think about dependencies
 
-//	Each subsystem (i.e. RigidBodyManager) will control the memory
+//	Each subsystem (i.e. ComponentManager<RigidBody>) will control the memory
 //	management for all subsystem items (i.e. RigidBodies).
 //	Each manager contains an array of all objects of that type, so that when we
 //	update a subsystem, they all get updated. GameObjects will have pointers
 //	to their specific rigidbody.
 
 extern GLFWwindow* window;
-RigidBodyManager gRigidBodyMgr;
-MeshInstanceManager gMeshInstanceMgr;
+ComponentManager<RigidBody> gRigidBodyMgr;
+ComponentManager<MeshInstance> gMeshInstanceMgr;
 EventMemoryPoolManager gEventMgr;
 OpenGLManager gOpenGLMgr;
 Timer gTimer;
@@ -67,6 +67,7 @@ extern size_t gUVBufferDataSize;
 bool InitializeSubsystems(DWORD memoryPageSize)
 {
     std::cout << "Memory page size on this system: " << memoryPageSize << std::endl;
+    //LOG_SIMPLE("Memory page size on this system: %s", memoryPageSize); what format is a DWORD?
 
     bool ok = true;
 
@@ -74,6 +75,29 @@ bool InitializeSubsystems(DWORD memoryPageSize)
     gEventMgr.Initialize(memoryPageSize);
     gRigidBodyMgr.Initialize(memoryPageSize);
     gMeshInstanceMgr.Initialize(memoryPageSize * 5);
+
+    /*ComponentManager<MeshInstance> gTest;
+    gTest.Initialize(memoryPageSize * 5);
+    MeshInstance* m = gTest.CreateComponent();
+    gTest.DebugPrint();
+    gTest.UpdateSubsystem(123);
+    gTest.MarkComponentForDelete(m);
+    gTest.UpdateSubsystem(123);
+    gTest.DebugPrint();
+
+    ComponentManager<RigidBody> gTestR;
+    gTestR.Initialize(memoryPageSize * 5);
+    RigidBody* r = gTestR.CreateComponent();
+    gTestR.DebugPrint();
+    gTestR.UpdateSubsystem(123);
+    gTestR.MarkComponentForDelete(r);
+    gTestR.UpdateSubsystem(123);
+    gTestR.DebugPrint();*/
+
+
+    gMeshInstanceMgr.Initialize(memoryPageSize * 5);
+
+
     gTimer.Initialize();
 
     return ok;
@@ -112,13 +136,13 @@ void SetupGameObject(GameObject& obj,
 {
     // Setup rigid body
 
-    RigidBody* objRB = gRigidBodyMgr.CreateRigidBody();
-    objRB->mName = obj.GetName() + "RB";
+    RigidBody* objRB = gRigidBodyMgr.CreateComponent();
+    objRB->SetName(obj.GetName() + "RB");
     obj.SetRigidBodyComponent(objRB);
 
     // Setup mesh instance
 
-    MeshInstance* objMI = gMeshInstanceMgr.CreateMeshInstance();
+    MeshInstance* objMI = gMeshInstanceMgr.CreateComponent();
     objMI->SetName(obj.GetName() + "MI");
     objMI->SetTexture(uvDataSize, uvData, textureHandle);
     objMI->SetVertexData(vertDataSize, vertData);
@@ -132,8 +156,6 @@ void HandleEvent(Event& evt)
     {
     case EventType::UP_ARROW_PRESSED:
     {
-
-  
         CollisionData* data = dynamic_cast<CollisionData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj2->GetRigidBodyComponent())->mDirection *= -1;
         break;
@@ -146,18 +168,19 @@ void HandleEvent(Event& evt)
 
         //only way to improve is if I handled multiple of the same type of events at once...
         //maybe not a bad idea...? I'll save that for later - TODO
-  
-                                   MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.GetData());
+
+        MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.x += data->destX;
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.y += data->destY;
         break;
     }
     case EventType::PRINT_DEBUG:
     {
-                                   std::cout << "DEBUG PRINTING: " << std::endl;
-                                   gEventMgr.DebugPrint();
+
+        LOG_SIMPLE("DEBUG PRINTING");
+        gEventMgr.DebugPrint();
     }
-        //default:
+    //default:
     }
 
     //todo, remove event from queue
@@ -165,6 +188,11 @@ void HandleEvent(Event& evt)
 }
 
 std::unordered_map<PongGameHandle, GameObject*> gWorldObjects;
+
+bool someFunc()
+{
+    return true;
+}
 
 int main()
 {
@@ -211,8 +239,6 @@ int main()
     ball.DebugPrint();
     gRigidBodyMgr.DebugPrint();
     gMeshInstanceMgr.DebugPrint();
-    //mim.DestroyMeshInstance(0);
-    //mim.DebugPrint();
 
     //TODO - map keyboard input to events
     CollisionData* data = new CollisionData();
@@ -223,7 +249,7 @@ int main()
     eventQueue.Enqueue(dummyEvt);
 
     KeyboardInput ki;
-    
+
 
     // ALL SETUP - ENTER LOOP
 
@@ -240,7 +266,7 @@ int main()
 
         // Placeholder code for detecting collision and reversing ball speed
         RigidBody* ballbody = reinterpret_cast<RigidBody*>(ball.GetRigidBodyComponent());
-        if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)            
+        if (ballbody->mPositionWorldCoord.x < -3 && ballbody->mDirection.x < 0)
         {
             ballbody->mDirection.x *= -1;
             LOG_SIMPLE("Hit! %f", gTimer.GetTime());
@@ -263,7 +289,7 @@ int main()
             const Event* peek = eventQueue.Peek();
             if (peek && peek->GetFrameToExecute() <= gFrameCount)
             {
-                LOG_SIMPLE("About to process: ")
+                LOG_SIMPLE("About to process: ");
                 peek->DebugPrint();
             }
             else
@@ -285,7 +311,7 @@ int main()
         double currentTime = gTimer.GetTime();
         frameTimeTracker.AddElement(currentTime - previousTime);
         previousTime = currentTime;
-        
+
         //Update subsystems
         UpdateSubsystems(frameTimeTracker.GetRunningAvg());
 

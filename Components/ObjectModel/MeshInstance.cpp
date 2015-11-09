@@ -2,6 +2,8 @@
 #include <iostream>
 #include <assert.h>
 
+//#include "common\LoggingDefines.h"
+
 MeshInstance::MeshInstance()
 {
     std::cout << "MeshInstance constructor!" << std::endl;
@@ -31,21 +33,9 @@ MeshInstance::MeshInstance(MeshInstance&& obj)
 
 void MeshInstance::Initialize()
 {
-
-    strcpy(mName, "Unknown");
+    this->SetName("Unknown");
 }
 
-void MeshInstance::SetName(const std::string& name)
-{
-    assert(name.length() < 15);
-
-    strcpy(mName, name.c_str());
-}
-
-std::string MeshInstance::GetName() const
-{
-    return std::string(mName);
-}
 
 GLuint MeshInstance::GetVertBufferHandle() const
 {
@@ -62,16 +52,20 @@ GLuint MeshInstance::GetTextureHandle() const
     return mTextureHandle;
 }
 
-bool MeshInstance::IsMarkedForDeletion() const
-{
-    return mMarkedForDeletion;
-}
 void MeshInstance::DebugPrint()
 {
-    std::cout << mName << std::endl <<
-        "	mVerticesHandle: " << mVertices.GetHandle() << std::endl <<
-        "	mUVBufferHandle: " << mUVBuffer.GetHandle() << std::endl <<
-        "	mTextureHandle: " << mTextureHandle << std::endl << std::endl;
+    if (mUVBuffer.IsInitialized() && mVertices.IsInitialized())
+    {
+        std::cout << GetName() << std::endl <<
+            "	mVerticesHandle: " << mVertices.GetHandle() << std::endl <<
+            "	mUVBufferHandle: " << mUVBuffer.GetHandle() << std::endl <<
+            "	mTextureHandle: " << mTextureHandle << std::endl << std::endl;
+    }
+    else
+    {
+        //LOG_SIMPLE("%s", mName);
+        std::cout << GetName() << std::endl;
+    }
 }
 
 void MeshInstance::SetTexture(unsigned int uvBufferSize, GLfloat* data, GLuint textureHandle)
@@ -83,4 +77,8 @@ void MeshInstance::SetTexture(unsigned int uvBufferSize, GLfloat* data, GLuint t
 void MeshInstance::SetVertexData(unsigned int vertBufferSize, GLfloat* data)
 {
     mVertices.Initialize(vertBufferSize, data);
+}
+
+void MeshInstance::Update(double timeDelta)
+{
 }

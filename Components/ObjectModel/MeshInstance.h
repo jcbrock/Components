@@ -1,12 +1,13 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
+#include "Component.h"
 #include "../Buffer.h"
 #include <GL/glew.h>
 #include <string>
 
 // This class is responsible for handling the OpenGL representation of obj
-class MeshInstance
+class MeshInstance : public Component
 {
 public:
     static unsigned int ID; //TODO
@@ -18,28 +19,22 @@ public:
     MeshInstance(MeshInstance&&);
 
     void Initialize();
-    void DebugPrint();
+    void DebugPrint() override;
+    void Update(double timeDelta) override;
 
     // Getters / Setters
 
-    void SetName(const std::string& name);
     void SetVertexData(unsigned int vertBufferSize, GLfloat* data);
     void SetTexture(unsigned int uvBufferSize, GLfloat* data, GLuint textureHandle);
 
-    std::string GetName() const;
     GLuint GetVertBufferHandle() const;
     GLuint GetUVBufferHandle() const;
     GLuint GetTextureHandle() const;
-    bool IsMarkedForDeletion() const;
 
 private:
-    bool mMarkedForDeletion = false;
     GLuint mTextureHandle;
     Buffer mVertices;
     Buffer mUVBuffer;
-
-private:
-    char mName[16]; //stack 15 bytes
 };
 
 #endif

@@ -13,6 +13,7 @@ public:
     // To change buffer data, just recall this function.
     // Same buffer handle will be used.
     void Initialize(unsigned int bufferSize, GLfloat * data);
+    bool IsInitialized() const { return mInitialized; }
 
     GLuint GetHandle() const;
     unsigned int GetSize() const;

@@ -51,17 +51,11 @@
     <ClCompile Include="OpenGL\OpenGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RigidBodyManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ObjectModel\MeshInstance.cpp">
       <Filter>ObjectModel</Filter>
     </ClCompile>
     <ClCompile Include="ObjectModel\RigidBody.cpp">
       <Filter>ObjectModel</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshInstanceManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OpenGLManager.cpp">
       <Filter>Source Files</Filter>
@@ -99,6 +93,9 @@
     <ClCompile Include="EventSystem\EventMemoryPoolManager.cpp">
       <Filter>EventSystem</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectModel\Component.cpp">
+      <Filter>ObjectModel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -113,17 +110,11 @@
     <ClInclude Include="common\texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RigidBodyManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ObjectModel\RigidBody.h">
       <Filter>ObjectModel</Filter>
     </ClInclude>
     <ClInclude Include="ObjectModel\MeshInstance.h">
       <Filter>ObjectModel</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshInstanceManager.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OpenGLManager.h">
       <Filter>Header Files</Filter>
@@ -166,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="common\LoggingDefines.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectModel\Component.h">
+      <Filter>ObjectModel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
