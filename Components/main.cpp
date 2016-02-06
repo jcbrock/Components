@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <thread>
 
 #include "common\LoggingDefines.h"
 #include "GameObject.h"
@@ -149,6 +148,9 @@ void SetupGameObject(GameObject& obj,
     obj.SetMeshInstanceComponent(objMI);
 }
 
+// TODO - move to an event system similar to work (systems can register themselves with a global dispatcher, then handle
+// the event in their callback)?
+
 EventQueue eventQueue;
 void HandleEvent(Event& evt)
 {
@@ -162,13 +164,6 @@ void HandleEvent(Event& evt)
     }
     case EventType::MOVE_PADDLE:
     {
-        // so objects are gunna move regardless of if they got an event or not,
-        // THAT is what the update loop is about. It is fine if I move this here and it isn't
-        // a batched type thing...
-
-        //only way to improve is if I handled multiple of the same type of events at once...
-        //maybe not a bad idea...? I'll save that for later - TODO
-
         MovePaddleData* data = dynamic_cast<MovePaddleData*>(evt.GetData());
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.x += data->destX;
         reinterpret_cast<RigidBody*>(data->obj1->GetRigidBodyComponent())->mPositionWorldCoord.y += data->destY;
