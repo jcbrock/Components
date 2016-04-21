@@ -50,9 +50,9 @@ void GameObject::DebugPrint()
     std::cout << "Size: " << sizeof(GameObject) << std::endl << std::endl;
 }
 
-void GameObject::SetComponent(void* ptr, int slot)
+void GameObject::SetComponent(void* ptr, unsigned int slot)
 {
-    if (slot < 0 || slot > 4)
+    if (slot < 0 || slot > ComponentIndex::MaxSize)
     {
         //print error
         return;
@@ -63,25 +63,27 @@ void GameObject::SetComponent(void* ptr, int slot)
 
 void GameObject::SetRigidBodyComponent(void* ptr)
 {
-    SetComponent(ptr, 0);
+    SetComponent(ptr, ComponentIndex::RigidBody);
 }
 
 void GameObject::SetMeshInstanceComponent(void* ptr)
 {
-    SetComponent(ptr, 1);
+    SetComponent(ptr, ComponentIndex::MeshInstance);
 }
 
-void GameObject::SetCComponent(void* ptr)
-{
-    SetComponent(ptr, 2);
-}
+//void GameObject::SetCComponent(void* ptr)
+//{
+//    SetComponent(ptr, 2);
+//}
 
+//hmm, it is nice to not have this class dependant on other crap, like RigidBody
+//well, if not here, then where? 
 void* GameObject::GetRigidBodyComponent() const
 {
-    return mComponents[0];
+    return mComponents[ComponentIndex::RigidBody];
 }
 
 void* GameObject::GetMeshInstanceComponent() const
 {
-    return mComponents[1];
+    return mComponents[ComponentIndex::MeshInstance];
 }
