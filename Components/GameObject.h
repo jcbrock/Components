@@ -6,6 +6,13 @@
 
 class GameObject
 {
+    //todo - right place for this?
+    enum ComponentIndex// : unsigned char
+    {
+        RigidBody = 0,
+        MeshInstance,
+        MaxSize // MUST BE LAST ELEMENT
+    };
 public:
     GameObject();
     GameObject(const std::string& name);
@@ -19,10 +26,10 @@ public:
 
     void DebugPrint();
     
-    void SetComponent(void* ptr, int slot);
+    void SetComponent(void* ptr, unsigned int slot);
     void SetRigidBodyComponent(void* ptr);
     void SetMeshInstanceComponent(void* ptr);
-    void SetCComponent(void* ptr);
+    //void SetCComponent(void* ptr);
 
     void* GetRigidBodyComponent() const;
     void* GetMeshInstanceComponent() const;
@@ -34,6 +41,11 @@ public:
 private:
     char mName[12]; //stack 12 bytes
 
+    // The question is - do I have an array of components with slots always being the same type of components?
+    // - Why even have an array then? I don't think I'll ever iterate through them...
+    // Or do I have a dynamic list of components? Then each time I'm looking for a RB, I need to lookup the type
+    // - Saves on size, but lookup time is crappier
+    // Getting compile time lookups would be nice tho...
     std::array<void*, 5> mComponents; //20 bytes
     //make these constants
     //slot 0 - RigidBody
